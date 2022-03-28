@@ -9,6 +9,7 @@ import stockapp.stocks.service.StockQueriesService
 @RestController
 @RequestMapping("/stocks/")
 class StockQueriesResource {
+
     val stockQueriesService: StockQueriesService = TODO()
 
     @GetMapping("/{stockID}")
