@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -23,9 +24,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-	implementation("org.springdoc:springdoc-openapi-data-rest:1.6.0")
-	implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
-	implementation("org.springdoc:springdoc-openapi-kotlin:1.6.0")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 }

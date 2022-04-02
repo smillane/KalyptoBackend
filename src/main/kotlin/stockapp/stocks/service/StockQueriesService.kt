@@ -4,15 +4,14 @@ import org.springframework.stereotype.Component
 
 @Component
 class StockQueriesService {
-    enum class weekday { MON, TUES, WED, THURS, FRI }
     private val doesNotExist: String = "false"
     private val weekdays: Array<String> = arrayOf("Mon", "Tues", "Wed", "Thurs", "Fri")
     private val weekends: Array<String> = arrayOf("Sat", "Sun")
     private val timePeriods: Map<String, Map<String, String>> = mapOf("default" to mapOf("start" to "9:30", "end" to "16:00"), "basicQuote" to mapOf("start" to "7:00", "end" to "20:00"))
 
-    fun getStockInformation(stockID: String): String {
+    fun getStockInformation(stockID: String) {
         if (!dbCheck(stockID)) {
-            return doesNotExist
+            return
         }
     }
 
