@@ -1,13 +1,14 @@
 package stockapp.stocks.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import kotlinx.coroutines.flow.Flow
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
 
 @Component
-class StockQueriesService {
-    private val doesNotExist: String = "false"
-    private val weekdays: Array<String> = arrayOf("Mon", "Tues", "Wed", "Thurs", "Fri")
-    private val weekends: Array<String> = arrayOf("Sat", "Sun")
-    private val timePeriods: Map<String, Map<String, String>> = mapOf("default" to mapOf("start" to "9:30", "end" to "16:00"), "basicQuote" to mapOf("start" to "7:00", "end" to "20:00"))
+class StockQueriesService(
+    val iexApiService: IEXApiService
+) {
 
     fun getStockInformation(stockID: String) {
         if (!dbCheck(stockID)) {
@@ -16,18 +17,15 @@ class StockQueriesService {
     }
 
     private fun dbCheck(stockID: String): Boolean {
-        if (!apiCheck(stockID)) {
-            return false
-        }
+//        if (!apiCheck(stockID)) {
+//            return false
+//        }
         firstRunQueryAndSave(stockID)
         return true
     }
 
-    private fun apiCheck(stockID: String): Boolean {
-        if (TODO()) {
-            return false
-    }
-        return true
+    fun apiCheck(stockID: String): Flow<JsonNode> {
+        return iexApiService.GetStockQuote(stockID)
     }
 
     fun firstRunQueryAndSave(stockID: String) {
