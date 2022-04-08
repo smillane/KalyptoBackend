@@ -1,6 +1,5 @@
 package stockapp.stocks.resource
 
-import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -14,7 +13,7 @@ class StockQueriesResource(
     val stockQueriesService: StockQueriesService
 ) {
     @GetMapping("/{stockID}")
-    suspend fun getStockInformation(@PathVariable("stockID") stockID: String): Flow<JsonNode> {
+    suspend fun getStockInformation(@PathVariable("stockID") stockID: String): Any {
         return stockQueriesService.apiCheck(stockID)
     }
 }

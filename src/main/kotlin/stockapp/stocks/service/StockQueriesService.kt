@@ -1,35 +1,58 @@
 package stockapp.stocks.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
+
 
 @Component
 class StockQueriesService(
-    val iexApiService: IEXApiService
+    val iexApiService: IEXApiService,
 ) {
+    private val returnError: Flow<String> = flowOf("false")
+    private val returnNotFound: Flow<String> = flowOf("notFound")
+    private val doesNotExist: String = "Does Not Exist"
+    val mapper = ObjectMapper()
 
-    fun getStockInformation(stockID: String) {
+    suspend fun getStockInformation(stockID: String) {
         if (!dbCheck(stockID)) {
             return
         }
     }
 
-    private fun dbCheck(stockID: String): Boolean {
-//        if (!apiCheck(stockID)) {
-//            return false
-//        }
+    suspend fun dbCheck(stockID: String): String {
+        TODO("add logic to check db")
+        if (apiCheck(stockID) === returnError) {
+            return "false"
+        }
+        if (apiCheck(stockID) === returnNotFound) {
+            return doesNotExist
+        }
         firstRunQueryAndSave(stockID)
-        return true
     }
 
-    fun apiCheck(stockID: String): Flow<JsonNode> {
+    fun apiCheck(stockID: String): Any {
         return iexApiService.GetStockQuote(stockID)
     }
 
-    fun firstRunQueryAndSave(stockID: String) {
-
+    suspend fun firstRunQueryAndSave(stockID: String) {
+        val node = mapper.createObjectNode();
+        val quote = iexApiService.GetStockQuote(stockID).toString()
+        val nodeData = mapper.readTree(quote)
+        TODO("save stockdata to db")
+        node.set<JsonNode>("stockData", nodeData)
+        val statsBasic = iexApiService.GetStockStatsBasic(stockID)
+        TODO("save StockStatsBasic to db")
+        val insiderTrading = iexApiService.GetStockInsiderTrading(stockID)
+        TODO("save StockInsiderTrading to db")
+        val previousDividends = iexApiService.GetStockPreviousDividends(stockID)
+        TODO("save StockPreviousDividends to db")
+        val nextDividends = iexApiService.GetStockNextDividends(stockID)
+        TODO("save StockNextDividends to db")
     }
 
     fun updateAndReplace(stockID: String) {

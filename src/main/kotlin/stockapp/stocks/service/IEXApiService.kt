@@ -1,14 +1,17 @@
 package stockapp.stocks.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.sun.net.httpserver.HttpsServer
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onErrorResume
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpRange
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBodyOrNull
-import org.springframework.web.reactive.function.client.bodyToFlow
+import org.springframework.web.reactive.function.client.*
+import reactor.core.publisher.Mono
 
 @Service
 class IEXApiService {
@@ -18,13 +21,26 @@ class IEXApiService {
 
     private val iexBase: String = "https://sandbox.iexapis.com/stable/"
     private val iexBaseTimeSeries: String = "https://sandbox.iexapis.com/stable/time-series/"
+    private val returnError: Flow<String> = flowOf("false")
+    private val returnNotFound: Flow<String> = flowOf("notFound")
 
-    fun GetStockQuote(symbol: String): Flow<JsonNode> = WebClient
+    fun GetStockQuote(symbol: String): Flow<String> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/quote?token=$iexToken")
-        .retrieve()
-        .bodyToFlow()
+        .exchangeToFlow { response ->
+            if (response.statusCode() == HttpStatus.OK) {
+                return@exchangeToFlow response.bodyToFlow()
+            }
+            if (response.statusCode().is4xxClientError) {
+                return@exchangeToFlow returnNotFound;
+            }
+            if (response.statusCode().is5xxServerError) {
+                return@exchangeToFlow returnError;
+            }
+            else {
+                return@exchangeToFlow returnError;
+            }}
 
     fun GetStockStatsBasic(symbol: String): Flow<String> = WebClient
         .create(iexBase)
@@ -43,7 +59,7 @@ class IEXApiService {
     fun GetStockPreviousDividends(symbol: String): Flow<String> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("dividends/$symbol?last=4?token=$iexToken")
+        .uri("dividends/$symbol?last=8?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
