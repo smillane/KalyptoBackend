@@ -15,28 +15,36 @@ class StockQueriesService(
 ) {
     private val returnError: Flow<String> = flowOf("false")
     private val returnNotFound: Flow<String> = flowOf("notFound")
-    private val doesNotExist: String = "Does Not Exist"
     val mapper = ObjectMapper()
 
-    suspend fun getStockInformation(stockID: String) {
+    suspend fun getStockInformation(stockID: String): String {
         if (!dbCheck(stockID)) {
-            return
+            if (!apiCheck(stockID)) {
+                return "false"
+            }
+            updateDocs(stockID)
         }
+        return "temp"
     }
 
-    suspend fun dbCheck(stockID: String): String {
+    suspend fun dbCheck(stockID: String): Boolean {
         TODO("add logic to check db")
-        if (apiCheck(stockID) === returnError) {
-            return "false"
+        if (TODO("NOT IN DB")) {
+            return false
         }
-        if (apiCheck(stockID) === returnNotFound) {
-            return doesNotExist
+        return true
+    }
+
+    suspend fun apiCheck(stockID: String): Boolean {
+        val statsQuote = iexApiService.GetStockQuote(stockID)
+        if (statsQuote === returnError) {
+            return false
+        }
+        if (statsQuote === returnNotFound) {
+            return false
         }
         firstRunQueryAndSave(stockID)
-    }
-
-    fun apiCheck(stockID: String): Any {
-        return iexApiService.GetStockQuote(stockID)
+        return true
     }
 
     suspend fun firstRunQueryAndSave(stockID: String) {
@@ -45,14 +53,18 @@ class StockQueriesService(
         val nodeData = mapper.readTree(quote)
         TODO("save stockdata to db")
         node.set<JsonNode>("stockData", nodeData)
-        val statsBasic = iexApiService.GetStockStatsBasic(stockID)
+        val statsBasic = iexApiService.GetStockStatsBasic(stockID).toString()
         TODO("save StockStatsBasic to db")
-        val insiderTrading = iexApiService.GetStockInsiderTrading(stockID)
+        val insiderTrading = iexApiService.GetStockInsiderTrading(stockID).toString()
         TODO("save StockInsiderTrading to db")
-        val previousDividends = iexApiService.GetStockPreviousDividends(stockID)
+        val previousDividends = iexApiService.GetStockPreviousDividends(stockID).toString()
         TODO("save StockPreviousDividends to db")
-        val nextDividends = iexApiService.GetStockNextDividends(stockID)
+        val nextDividends = iexApiService.GetStockNextDividends(stockID).toString()
         TODO("save StockNextDividends to db")
+    }
+
+    fun updateDocs(stockID: String) {
+
     }
 
     fun updateAndReplace(stockID: String) {
