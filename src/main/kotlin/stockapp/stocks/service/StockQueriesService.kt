@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.litote.kmongo.eq
+import org.litote.kmongo.push
+import org.litote.kmongo.set
+import org.litote.kmongo.setTo
 import org.springframework.stereotype.Component
-import stockapp.external.clientConnections.stockQuoteCollection
-import stockapp.stocks.model.StockQuote
+import stockapp.external.clientConnections.*
+import stockapp.stocks.model.*
 
 
 @Component
@@ -47,19 +50,30 @@ class StockQueriesService(
     }
 
     suspend fun firstRunQueryAndSave(stockID: String) {
-        val node = mapper.createObjectNode();
+        val currentTime = TODO()
+        val node = mapper.createObjectNode()
         val quote = iexApiService.GetStockQuote(stockID).toString()
         val nodeData = mapper.readTree(quote)
-        TODO("save stockdata to db")
+        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockID, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime))
         node.set<JsonNode>("stockData", nodeData)
+
         val statsBasic = iexApiService.GetStockStatsBasic(stockID).toString()
-        TODO("save StockStatsBasic to db")
+        stockStatsBasicCollection.updateOne(StockStatsBasic::symbol eq stockID, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime))
+
         val insiderTrading = iexApiService.GetStockInsiderTrading(stockID).toString()
-        TODO("save StockInsiderTrading to db")
+        stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockID, push(StockInsiderTrading::docs, insiderTrading))
+        stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockID, StockInsiderTrading::lastUpdated eq currentTime)
+
         val previousDividends = iexApiService.GetStockPreviousDividends(stockID).toString()
-        TODO("save StockPreviousDividends to db")
+        stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockID, push(StockPreviousDividend::docs, previousDividends))
+        stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockID, StockPreviousDividend::lastUpdated eq currentTime)
+
         val nextDividends = iexApiService.GetStockNextDividends(stockID).toString()
-        TODO("save StockNextDividends to db")
+        stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockID,
+            set(StockNextDividend::docs setTo nextDividends, StockNextDividend::lastUpdated setTo currentTime, StockNextDividend::nextUpdate setTo TODO("figure out how to get next dividend date")))
+
+        val largestTrades = iexApiService.GetStockLargestTrades(stockID).toString()
+        stockLargestTradesCollection.updateOne(StockLargestTrades::symbol eq stockID, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime))
     }
 
     fun updateDocs(stockID: String) {
