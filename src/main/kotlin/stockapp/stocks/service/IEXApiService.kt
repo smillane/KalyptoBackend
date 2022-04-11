@@ -1,17 +1,11 @@
 package stockapp.stocks.service
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.sun.net.httpserver.HttpsServer
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onErrorResume
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpRange
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.*
-import reactor.core.publisher.Mono
 
 @Service
 class IEXApiService {

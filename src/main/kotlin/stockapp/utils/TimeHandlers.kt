@@ -21,12 +21,12 @@ class TimeHandlers {
         SUNDAY("SUNDAY")
     }
 
-    private enum class TimePeriod(val day: String) {
+    private enum class TimePeriod(val period: String) {
         START("9:30"),
         END("4:00")
     }
 
-    private enum class ExtendedTimePeriod(val day: String) {
+    private enum class ExtendedTimePeriod(val period: String) {
         START("7:00"),
         END("20:00")
     }

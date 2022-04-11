@@ -3,10 +3,11 @@ package stockapp.stocks.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json
+import org.litote.kmongo.eq
 import org.springframework.stereotype.Component
+import stockapp.external.clientConnections.stockQuoteCollection
+import stockapp.stocks.model.StockQuote
 
 
 @Component
@@ -17,21 +18,19 @@ class StockQueriesService(
     private val returnNotFound: Flow<String> = flowOf("notFound")
     val mapper = ObjectMapper()
 
-    suspend fun getStockInformation(stockID: String): String {
+    suspend fun getStockInformation(stockID: String): Any {
         if (!dbCheck(stockID)) {
             if (!apiCheck(stockID)) {
-                return "false"
+                return false
             }
-            updateDocs(stockID)
+            firstRunQueryAndSave(stockID)
         }
-        return "temp"
+        findAndReturn(stockID)
+        return "todo"
     }
 
     suspend fun dbCheck(stockID: String): Boolean {
-        TODO("add logic to check db")
-        if (TODO("NOT IN DB")) {
-            return false
-        }
+        stockQuoteCollection.findOne(StockQuote::symbol eq stockID) ?: return false
         return true
     }
 

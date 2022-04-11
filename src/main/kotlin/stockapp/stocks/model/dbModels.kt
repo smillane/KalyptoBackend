@@ -1,4 +1,4 @@
-package stockapp.model
+package stockapp.stocks.model
 
 data class StockQuote(val symbol: String, val lastUpdated: Int, val docs: Any)
 
