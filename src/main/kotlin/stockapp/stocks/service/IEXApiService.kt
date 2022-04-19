@@ -1,5 +1,6 @@
 package stockapp.stocks.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.springframework.beans.factory.annotation.Value
@@ -18,7 +19,7 @@ class IEXApiService {
     private val returnError: Flow<String> = flowOf("false")
     private val returnNotFound: Flow<String> = flowOf("notFound")
 
-    fun GetStockQuote(symbol: String): Flow<String> = WebClient
+    fun GetStockQuote(symbol: String): Flow<Any> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/quote?token=$iexToken")
@@ -36,35 +37,42 @@ class IEXApiService {
                 return@exchangeToFlow returnError;
             }}
 
-    fun GetStockStatsBasic(symbol: String): Flow<String> = WebClient
+    fun GetStockStatsBasic(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/stats?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
-    fun GetStockInsiderTrading(symbol: String): Flow<String> = WebClient
+    fun GetLast15StockInsiderTrading(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("insider_transactions/$symbol?last=10?token=$iexToken")
+        .uri("insider_transactions/$symbol?last=15?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
-    fun GetStockPreviousDividends(symbol: String): Flow<String> = WebClient
+    fun GetStockInsiderTradingFromLastUpdated(symbol: String, lastUpdate: String): Flow<JsonNode> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("dividends/$symbol?last=8?token=$iexToken")
+        .uri("insider_transactions/$symbol/from$lastUpdate?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
-    fun GetStockNextDividends(symbol: String): Flow<String> = WebClient
+    fun GetStockPreviousDividends(symbol: String): Flow<JsonNode> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/$symbol/dividends/2y?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun GetStockNextDividends(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/dividends/next?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
-    fun GetStockLargestTrades(symbol: String): Flow<String> = WebClient
+    fun GetStockLargestTrades(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/largest-trades?token=$iexToken")
