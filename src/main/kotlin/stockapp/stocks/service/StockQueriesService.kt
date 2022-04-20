@@ -2,10 +2,12 @@ package stockapp.stocks.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
-import kotlinx.datetime.Clock
+import kotlinx.datetime.*
 import org.litote.kmongo.eq
 import org.litote.kmongo.push
 import org.litote.kmongo.set
@@ -23,14 +25,10 @@ class StockQueriesService(
     private val returnNotFound: Flow<String> = flowOf("notFound")
     val mapper = ObjectMapper()
 
-    suspend fun getStockInformation(stockID: String): Any {
+    suspend fun getStockInformation(stockID: String) {
         if (!dbCheck(stockID)) {
-            if (!apiCheck(stockID)) {
-                return false
-            }
+            apiCheck(stockID)
         }
-        findAndReturn(stockID)
-        return "todo"
     }
 
     suspend fun dbCheck(stockID: String): Boolean {
@@ -47,12 +45,10 @@ class StockQueriesService(
             return false
         }
         firstRunQueryAndSave(stockID, statsQuote as JsonNode)
-        return true
     }
 
-    suspend fun firstRunQueryAndSave(stockID: String, quote: JsonNode) {
-        val current = Clock.System.now()
-        val currentTime = Clock.System.now().toString()
+    suspend fun firstRunQueryAndSave(stockID: String, quote: JsonNode): JsonNode {
+        val currentTime = Clock.System.now()
         val node = mapper.createObjectNode()
         stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockID, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime))
         node.set<JsonNode>("stockQuote", quote)
@@ -73,12 +69,15 @@ class StockQueriesService(
 
         val nextDividends: JsonNode = mapper.valueToTree(iexApiService.GetStockNextDividends(stockID))
         stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockID,
-            set(StockNextDividend::docs setTo nextDividends[0], StockNextDividend::lastUpdated setTo currentTime, StockNextDividend::nextUpdate setTo TODO("figure out how to get next dividend date")))
+            set(StockNextDividend::docs setTo nextDividends[0], StockNextDividend::lastUpdated setTo currentTime,
+                StockNextDividend::nextUpdate setTo Instant.parse(nextDividends.findValue("exDate").textValue())))
         node.set<JsonNode>("stockNextDividends", nextDividends)
 
         val largestTrades: JsonNode = mapper.valueToTree(iexApiService.GetStockLargestTrades(stockID))
         stockLargestTradesCollection.updateOne(StockLargestTrades::symbol eq stockID, set(StockLargestTrades::docs setTo largestTrades[0], StockLargestTrades::lastUpdated setTo currentTime))
         node.set<JsonNode>("stockLargestTrades", largestTrades)
+
+        return mapper.treeToValue(node)
     }
 
     fun updateDocs(stockID: String) {
@@ -98,7 +97,9 @@ class StockQueriesService(
     }
 
     fun updateIntervalCheck() {
-
+        val instantInThePast = TODO()
+        val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.of("EST"))
+        val diffInMinutes = instantInThePast.until(Clock.System.now(), DateTimeUnit.MINUTE, TimeZone.of("EST"))
     }
 
     fun updateAndAddToList() {
@@ -114,6 +115,10 @@ class StockQueriesService(
     }
 
     fun updateListInDB() {
+
+    }
+
+    private fun apiResponseOk() {
 
     }
 }
