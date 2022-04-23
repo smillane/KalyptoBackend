@@ -1,10 +1,9 @@
 package stockapp.utils
 
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
 import org.springframework.stereotype.Component
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.TextStyle
-import java.util.*
+import kotlinx.datetime.*
 
 @Component
 class TimeHandlers {
@@ -31,34 +30,48 @@ class TimeHandlers {
         END("20:00")
     }
 
-    private val minimumInterval: Int = 5
-
-    suspend fun generateCurrentTimeStamp(): Long {
-        return Instant.now().epochSecond
+    suspend fun lastUpdateQuery(currentTime: Instant, lastUpdated: Instant) {
+        val diffInMinutes = lastUpdated.until(currentTime, DateTimeUnit.MINUTE, TimeZone.of("EST"))
     }
 
-    suspend fun isWeekdayCheck(inputDay: String): Boolean {
-        val currentDay = Instant.now().epochSecond
-        val dayOfWeek = Instant.ofEpochSecond(currentDay)
-            .atZone( ZoneId.of("America/New_York"))
-            .dayOfWeek
-            .getDisplayName( TextStyle.FULL, Locale.US )
-        if (Weekends.values().any { it.day == inputDay } ) {
+    fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Long, extended: Boolean): Boolean {
+        val diffInMinutes = lastUpdated.until(currentTime, DateTimeUnit.MINUTE, TimeZone.of("EST"))
+        if (diffInMinutes < interval) {
+            return false
+        }
+        if (!isWeekdayCheck(lastUpdated)) {
+            return false
+        }
+        if (!isMarketOpen(lastUpdated)) {
+            return false
+        }
+        if (extended and !isExtendedHours(lastUpdated)) {
+            return false
+        }
+        return true
+    }
+
+    fun isWeekdayCheck(time: Instant): Boolean {
+        val day = time.toLocalDateTime(TimeZone.of("EST")).dayOfWeek.toString()
+        if (Weekdays.values().any { it.name == day }) {
             return true
         }
         return false
     }
 
-    suspend fun lastUpdateQuery() {
-
-    }
-
-    suspend fun updateTimePeriodCheck(lastUpdated: Long): Boolean {
-        // add logic to find time diff from last lastUpdated to currentTime
-        val lastUpdatedToNow: Int = TODO()
-        if (lastUpdatedToNow <= 300 ) {
-            return false
+    fun isMarketOpen(currentTime: Instant): Boolean {
+        if (currentTime.toLocalDateTime(TimeZone.of("EST")).minute in 570..960) {
+            return true
         }
-        return true
+        return false
     }
+
+    fun isExtendedHours(currentTime: Instant): Boolean {
+        if (currentTime.toLocalDateTime(TimeZone.of("EST")).minute in 240..1200) {
+            return true
+        }
+        return false
+    }
+
+//    val period: DateTimePeriod = instantInThePast.periodUntil(Clock.System.now(), TimeZone.of("EST"))
 }
