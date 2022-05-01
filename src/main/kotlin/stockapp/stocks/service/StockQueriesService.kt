@@ -14,18 +14,18 @@ import org.springframework.stereotype.Component
 
 import stockapp.external.clientConnections.*
 import stockapp.stocks.model.*
-import stockapp.utils.TimeHandlers
+import stockapp.utils.updateIntervalCheck
 
 
 @Component
 class StockQueriesService(
     val iexApiService: IEXApiService,
-    val timeHandlers: TimeHandlers,
 ) {
     private val returnError: Flow<String> = flowOf("false")
     private val returnNotFound: Flow<String> = flowOf("notFound")
-    private val serverError: String = ("Error")
-    val mapper = ObjectMapper()
+    private val serverError: String = "Error"
+    private val mapper = ObjectMapper()
+    private val timePeriod: Long = 5L
 
     suspend fun getStockInformation(stockId: String): Any {
         if (!dbCheck(stockId)) {
@@ -35,8 +35,8 @@ class StockQueriesService(
         return getDocsFromDB(stockId)
     }
 
-    suspend fun dbCheck(stockID: String): Boolean {
-        stockQuoteCollection.findOne(StockQuote::symbol eq stockID) ?: return false
+    suspend fun dbCheck(stockId: String): Boolean {
+        stockQuoteCollection.findOne(StockQuote::symbol eq stockId) ?: return false
         return true
     }
 
@@ -86,11 +86,20 @@ class StockQueriesService(
 
     suspend fun updateDocs(stockId: String) {
         val currentTime = Clock.System.now()
+        val stockQuote = stockQuoteCollection.findOne(StockQuote::symbol eq stockId)
+        if (stockQuote != null) {
+            if (updateIntervalCheck(currentTime, stockQuote.lastUpdated, timePeriod, true)) {
+
+            }
+            if (updateIntervalCheck(currentTime, stockQuote.lastUpdated, timePeriod, false)) {
+
+            }
+        }
         updateListInDB(stockId, currentTime)
         updateDocInDB(stockId, currentTime)
     }
 
-    fun updateAndReplace(stockId: String, currentTimeStamp: Instant) {
+    fun updateQuote(stockId: String, currentTimeStamp: Instant) {
 
     }
 
@@ -106,14 +115,6 @@ class StockQueriesService(
 
     fun updateOnIntervalsAndAdd(stockID: String) {
 
-    }
-
-    fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Long): Boolean {
-        val diffInMinutes = lastUpdated.until(currentTime, DateTimeUnit.MINUTE, TimeZone.of("EST"))
-        if (diffInMinutes >= interval) {
-            return true
-        }
-        return false
     }
 
     fun getDocsFromDB(stockId: String) {

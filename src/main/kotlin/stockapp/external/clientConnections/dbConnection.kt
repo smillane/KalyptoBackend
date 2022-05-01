@@ -10,7 +10,7 @@ private val connectionString: ConnectionString? = System.getenv("MONGODB_URI")?.
     ConnectionString("$it?retryWrites=false")
 }
 
-private val client = if (null != connectionString) KMongo.createClient(connectionString).coroutine else KMongo.createClient().coroutine
+private val client = if (connectionString = null) KMongo.createClient(connectionString).coroutine else KMongo.createClient().coroutine
 private val database = client.getDatabase(connectionString?.database ?: "StockApp")
 
 val stockQuoteCollection =  database.getCollection<StockQuote>()
