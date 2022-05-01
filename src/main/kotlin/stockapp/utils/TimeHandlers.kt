@@ -28,10 +28,6 @@ private enum class ExtendedTimePeriod(val period: Int) {
     END(1200)
 }
 
-suspend fun lastUpdateQuery(currentTime: Instant, lastUpdated: Instant) {
-    val diffInMinutes = lastUpdated.until(currentTime, DateTimeUnit.MINUTE, TimeZone.of("EST"))
-}
-
 // only update if returns true
 fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Long, extended: Boolean): Boolean {
     val diffInMinutes = lastUpdated.until(currentTime, DateTimeUnit.MINUTE, TimeZone.of("EST"))
@@ -49,9 +45,14 @@ fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Lo
     }
     return true
 }
-// check if it was updated on current day, and if it was, was it before market close, and if market is closed, then update
-fun updateEndOfDayCheck() {
 
+// check if it was updated on current day, and if it was, was it before market close, and if market is closed, then return true to update
+fun updateAfterMarketCloseCheck(currentTime: Instant, lastUpdated: Instant): Boolean {
+    if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date
+        && lastUpdated.toLocalDateTime(TimeZone.of("EST")).minute < TimePeriod.END.period) {
+        return true
+    }
+    return false
 }
 
 fun isWeekdayCheck(time: Instant): Boolean {
@@ -71,6 +72,13 @@ fun isMarketOpen(time: Instant): Boolean {
 
 fun isExtendedHours(time: Instant): Boolean {
     if (time.toLocalDateTime(TimeZone.of("EST")).minute in ExtendedTimePeriod.START.period ..ExtendedTimePeriod.END.period) {
+        return true
+    }
+    return false
+}
+
+fun isToday(currentTime: Instant, lastUpdated: Instant): Boolean {
+    if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date) {
         return true
     }
     return false
