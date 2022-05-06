@@ -1,10 +1,11 @@
 package stockapp.stocks.model
 
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.datetime.Instant
 
-data class StockQuote(val symbol: String, val lastUpdated: Instant, val docs: Any)
-data class StockStatsBasic(val symbol: String, val lastUpdated: Instant, val docs: Any)
-data class StockPreviousDividend(val symbol: String, val lastUpdated: Instant, val docs: List<Any>)
-data class StockNextDividend(val symbol: String, val nextUpdate: Instant, val lastUpdated: Instant, val docs: Any)
-data class StockLargestTrades(val symbol: String, val lastUpdated: Instant, val docs: Any)
-data class StockInsiderTrading(val symbol: String, val lastUpdated: Instant, val docs: List<Any>)
+data class StockQuote(val symbol: String, val lastUpdated: Instant, val docs: JsonNode)
+data class StockStatsBasic(val symbol: String, val lastUpdated: Instant, val docs: JsonNode)
+data class StockPreviousDividend(val symbol: String, val lastUpdated: Instant, val docs: List<JsonNode>)
+data class StockNextDividend(val symbol: String, val nextUpdate: Instant, val lastUpdated: Instant, val docs: JsonNode)
+data class StockLargestTrades(val symbol: String, val lastUpdated: Instant, val docs: JsonNode)
+data class StockInsiderTrading(val symbol: String, val lastUpdated: Instant, val docs: List<JsonNode>)
