@@ -50,9 +50,16 @@ fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Lo
 fun updateAfterMarketCloseCheck(currentTime: Instant, lastUpdated: Instant): Boolean {
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date
         && lastUpdated.toLocalDateTime(TimeZone.of("EST")).minute < TimePeriod.END.period) {
-        return true
+        return false
     }
-    return false
+    return true
+}
+
+fun queryOnceDaily(currentTime: Instant, lastUpdated: Instant): Boolean {
+    if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date) {
+        return false
+    }
+    return true
 }
 
 fun isWeekdayCheck(time: Instant): Boolean {
