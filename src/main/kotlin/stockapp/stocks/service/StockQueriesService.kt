@@ -102,12 +102,7 @@ class StockQueriesService(
                 updateDocs(stockId, currentTime)
             }
             if (updateAfterMarketCloseCheck(currentTime, stockQuote.lastUpdated)) {
-                val nextDividends: StockNextDividend? = stockNextDividendCollection.findOne(StockNextDividend::symbol eq stockId)
-                if (nextDividends != null) {
-                    updateList(stockId, currentTime, nextDividends)
-                }
-                val latestInsiderTrades: JsonNode? =
-                    stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)?.docs?.get(-1)
+                updateAfterHours(stockId, currentTime)
             }
         }
     }
@@ -124,6 +119,18 @@ class StockQueriesService(
         stockStatsBasicCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime))
         val largestTrades: JsonNode = mapper.valueToTree(iexApiService.GetStockLargestTrades(stockId))
         stockLargestTradesCollection.updateOne(StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime))
+    }
+
+    private suspend fun updateAfterHours(stockId: String, currentTime: Instant) {
+        val nextDividends: StockNextDividend? = stockNextDividendCollection.findOne(StockNextDividend::symbol eq stockId)
+        if (nextDividends != null) {
+            updateList(stockId, currentTime, nextDividends)
+        }
+        val insiderTradingLastUpdated: Instant? =
+            stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)?.lastUpdated
+        val insiderTradesFromAPI: JsonNode = mapper.valueToTree(iexApiService.GetStockInsiderTradingFromLastUpdated(stockId,insiderTradingLastUpdated))
+        stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, insiderTradesFromAPI))
+        stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
     }
 
     private suspend fun updateList(stockId: String, currentTime: Instant, nextDividends: StockNextDividend) {
