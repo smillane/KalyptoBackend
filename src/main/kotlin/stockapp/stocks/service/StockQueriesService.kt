@@ -154,8 +154,4 @@ class StockQueriesService(
     fun getDocsFromDB(stockId: String) {
 
     }
-
-    private fun apiResponseOk() {
-
-    }
 }
