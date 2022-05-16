@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 import stockapp.external.clientConnections.*
 import stockapp.stocks.model.*
 import stockapp.utils.isToday
-import stockapp.utils.updateAfterMarketCloseCheck
+import stockapp.utils.updateAfterMarketClose
 import stockapp.utils.updateIntervalCheck
 
 
@@ -101,7 +101,7 @@ class StockQueriesService(
             if (updateIntervalCheck(currentTime, stockQuote.lastUpdated, timePeriod, false)) {
                 updateDocs(stockId, currentTime)
             }
-            if (updateAfterMarketCloseCheck(currentTime, stockQuote.lastUpdated)) {
+            if (updateAfterMarketClose(currentTime, stockQuote.lastUpdated)) {
                 updateAfterHours(stockId, currentTime)
             }
         }

@@ -34,7 +34,7 @@ fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Lo
     if (diffInMinutes < interval) {
         return false
     }
-    if (!isWeekdayCheck(lastUpdated)) {
+    if (!isWeekday(lastUpdated)) {
         return false
     }
     if (!isMarketOpen(lastUpdated)) {
@@ -47,7 +47,7 @@ fun updateIntervalCheck(currentTime: Instant, lastUpdated: Instant, interval: Lo
 }
 
 // check if it was updated on current day, and if it was, was it before market close, and if market is closed, then return true to update
-fun updateAfterMarketCloseCheck(currentTime: Instant, lastUpdated: Instant): Boolean {
+fun updateAfterMarketClose(currentTime: Instant, lastUpdated: Instant): Boolean {
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date != currentTime.toLocalDateTime(TimeZone.of("EST")).date &&
         lastUpdated.toLocalDateTime(TimeZone.of("EST")).date != currentTime.toLocalDateTime(TimeZone.of("EST")).date.minus(1, DateTimeUnit.DAY)) {
         return true
@@ -59,12 +59,12 @@ fun updateAfterMarketCloseCheck(currentTime: Instant, lastUpdated: Instant): Boo
         return false
     }
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date) {
-        return updateOnceAfterClose(currentTime, lastUpdated)
+        return updateOnlyAfterClose(currentTime, lastUpdated)
     }
     return false
 }
 
-fun updateOnceAfterClose(currentTime: Instant, lastUpdated: Instant): Boolean {
+fun updateOnlyAfterClose(currentTime: Instant, lastUpdated: Instant): Boolean {
     if (currentTime.toLocalDateTime(TimeZone.of("EST")).minute > TimePeriod.END.period && lastUpdated.toLocalDateTime(TimeZone.of("EST")).minute < TimePeriod.END.period) {
         return true
     }
@@ -78,7 +78,7 @@ fun isToday(currentTime: Instant, lastUpdated: Instant): Boolean {
     return false
 }
 
-fun isWeekdayCheck(time: Instant): Boolean {
+fun isWeekday(time: Instant): Boolean {
     val day = time.toLocalDateTime(TimeZone.of("EST")).dayOfWeek.toString()
     if (Weekends.values().any { it.day == day }) {
         return false
@@ -94,7 +94,8 @@ fun isMarketOpen(time: Instant): Boolean {
 }
 
 fun isExtendedHours(time: Instant): Boolean {
-    if (time.toLocalDateTime(TimeZone.of("EST")).minute in ExtendedTimePeriod.START.period ..ExtendedTimePeriod.END.period) {
+    val timeInMinutes = time.toLocalDateTime(TimeZone.of("EST")).minute
+    if (timeInMinutes in ExtendedTimePeriod.START.period ..TimePeriod.START.period || timeInMinutes in TimePeriod.END.period .. ExtendedTimePeriod.END.period) {
         return true
     }
     return false
