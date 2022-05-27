@@ -13,6 +13,6 @@ class StockQueriesResource(
 ) {
     @GetMapping("/{stockID}")
     suspend fun getStockInformation(@PathVariable("stockID") stockID: String): Any {
-        return stockQueriesService.apiCheck(stockID)
+        return stockQueriesService.getStockInformation(stockID)
     }
 }
