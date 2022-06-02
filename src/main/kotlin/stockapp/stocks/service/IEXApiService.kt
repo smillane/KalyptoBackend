@@ -48,14 +48,14 @@ class IEXApiService {
     fun getLast15StockInsiderTrading(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("insider_transactions/$symbol?last=15?token=$iexToken")
+        .uri("insider_transactions/$symbol?last=15&token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
     fun getStockInsiderTradingFromLastUpdated(symbol: String, lastUpdate: Instant?): Flow<JsonNode> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("insider_transactions/$symbol/from$lastUpdate?token=$iexToken")
+        .uri("insider_transactions/$symbol/from$lastUpdate&token=$iexToken")
         .retrieve()
         .bodyToFlow()
 

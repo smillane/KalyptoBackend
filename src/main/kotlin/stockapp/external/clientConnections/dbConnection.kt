@@ -4,14 +4,15 @@ import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.*
 import com.mongodb.ConnectionString
 import org.litote.kmongo.reactivestreams.KMongo
+
 import stockapp.stocks.model.*
 
-private val connectionString: ConnectionString? = System.getenv("MONGODB_URI")?.let {
+val connectionString: ConnectionString? = System.getenv("MONGODB_URI")?.let {
     ConnectionString("$it?retryWrites=false")
 }
 
-private val client = if (connectionString = null) KMongo.createClient(connectionString).coroutine else KMongo.createClient().coroutine
-private val database = client.getDatabase(connectionString?.database ?: "StockApp")
+val client = if (connectionString != null) KMongo.createClient(connectionString).coroutine else KMongo.createClient().coroutine
+val database = client.getDatabase(connectionString?.database ?: "StockApp")
 
 val stockQuoteCollection =  database.getCollection<StockQuote>()
 val stockStatsBasicCollection =  database.getCollection<StockStatsBasic>()

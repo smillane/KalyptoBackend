@@ -29,7 +29,7 @@ class StockQueriesService(
     private val mapper = ObjectMapper()
     private val timePeriod: Long = 5L
 
-    suspend fun getStockInformation(stockId: String): Any {
+    suspend fun getAllStockData(stockId: String): Any {
         if (!dbCheck(stockId)) {
             return apiCheck(stockId)
         }
