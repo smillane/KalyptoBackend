@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.Instant
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.*
@@ -12,9 +11,7 @@ import org.springframework.web.reactive.function.client.*
 @Service
 class IEXApiService {
 
-    @Value("\${IEX_PUBLIC_TOKEN}")
-    lateinit var iexToken: String
-
+    private val iexToken: String = System.getenv("IEX_PUBLIC_TOKEN")
     private val iexBase: String = "https://sandbox.iexapis.com/stable/"
     private val iexBaseTimeSeries: String = "https://sandbox.iexapis.com/stable/time-series/"
     private val returnError: Flow<String> = flowOf("false")
@@ -55,7 +52,7 @@ class IEXApiService {
     fun getStockInsiderTradingFromLastUpdated(symbol: String, lastUpdate: Instant?): Flow<JsonNode> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("insider_transactions/$symbol/from$lastUpdate&token=$iexToken")
+        .uri("insider_transactions/$symbol/?from=$lastUpdate&token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
