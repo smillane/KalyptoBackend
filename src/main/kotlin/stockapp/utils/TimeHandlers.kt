@@ -89,6 +89,14 @@ fun isToday(currentTime: Instant, lastUpdated: Instant): Boolean {
     return false
 }
 
+
+// return true if last updated = today
+fun wasYesterday(currentTime: Instant, lastUpdated: Instant): Boolean {
+    if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date.minus(1, DateTimeUnit.DAY)) {
+        return true
+    }
+    return false
+}
 // return true if a weekday
 fun isWeekday(time: Instant): Boolean {
     val day = time.toLocalDateTime(TimeZone.of("EST")).dayOfWeek.toString()

@@ -2,7 +2,6 @@ package stockapp.stocks.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.*
@@ -17,6 +16,7 @@ import stockapp.stocks.model.*
 import stockapp.utils.isToday
 import stockapp.utils.updateAfterMarketClose
 import stockapp.utils.updateIntervalCheck
+import stockapp.utils.wasYesterday
 
 
 @Component
@@ -120,7 +120,7 @@ class StockQueriesService(
     private suspend fun updateAfterHours(stockId: String, currentTime: Instant) {
         val nextDividends: StockNextDividend? = stockNextDividendCollection?.findOne(StockNextDividend::symbol eq stockId)
         if (nextDividends != null) {
-            updateLists(stockId, currentTime, nextDividends)
+            updateDividends(stockId, currentTime, nextDividends)
         }
         val insiderTradingFromDB: StockInsiderTrading? =
             stockInsiderTradingCollection?.findOne(StockInsiderTrading::symbol eq stockId)
@@ -133,8 +133,8 @@ class StockQueriesService(
         }
     }
 
-    private suspend fun updateLists(stockId: String, currentTime: Instant, nextDividends: StockNextDividend) {
-        if (isToday(currentTime, nextDividends.nextUpdate) and !isToday(currentTime, nextDividends.lastUpdated)) {
+    private suspend fun updateDividends(stockId: String, currentTime: Instant, nextDividends: StockNextDividend) {
+        if (wasYesterday(currentTime, nextDividends.nextUpdate) and !isToday(currentTime, nextDividends.lastUpdated)) {
             val previousDividend: List<JsonNode> = mapper.valueToTree(iexApiService.getStockPreviousDividend(stockId))
             updatePreviousDividends(stockId, currentTime, previousDividend[0])
             stockNextDividendCollection?.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime)
