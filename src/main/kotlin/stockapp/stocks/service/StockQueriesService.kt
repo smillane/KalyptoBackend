@@ -55,9 +55,8 @@ class StockQueriesService(
         return firstRunQueryAndSave(stockId, stockQuote as JsonNode)
     }
 
-    suspend fun firstRunQueryAndSave(stockId: String, quote: JsonNode): JsonNode {
+    suspend fun firstRunQueryAndSave(stockId: String, quote: JsonNode): ReturnStockData {
         val currentTime = Clock.System.now()
-        val node = mapper.createObjectNode()
         stockQuoteCollection?.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime))
 
         val statsBasic: JsonNode = mapper.valueToTree(iexApiService.getStockStatsBasic(stockId))
@@ -78,9 +77,8 @@ class StockQueriesService(
 
         val largestTrades: JsonNode = mapper.valueToTree(iexApiService.getStockLargestTrades(stockId))
         stockLargestTradesCollection?.updateOne(StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades[0], StockLargestTrades::lastUpdated setTo currentTime))
-        ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
 
-        return mapper.treeToValue(node)
+        return ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
     }
 
     // logic to reduce amount of db/api calls, some api calls only update after market close
@@ -158,26 +156,14 @@ class StockQueriesService(
         stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime)
     }
 
-    suspend fun getDocsFromDB(stockId: String): JsonNode {
-        val node = mapper.createObjectNode()
-        val quote: JsonNode? = stockQuoteCollection?.findOne(StockStatsBasic::symbol eq stockId)?.docs
-        node.set<JsonNode>("stockQuote", quote)
+    suspend fun getDocsFromDB(stockId: String): ReturnStockData {
+        val quote: JsonNode = stockQuoteCollection!!.findOne(StockStatsBasic::symbol eq stockId)!!.docs
+        val statsBasic: JsonNode = stockStatsBasicCollection!!.findOne(StockStatsBasic::symbol eq stockId)!!.docs
+        val previousDividends: List<JsonNode> = stockPreviousDividendCollection?.findOne(StockPreviousDividend::symbol eq stockId)!!.docs
+        val nextDividends: JsonNode = stockNextDividendCollection!!.findOne(StockNextDividend::symbol eq stockId)!!.docs
+        val largestTrades: JsonNode = stockLargestTradesCollection!!.findOne(StockLargestTrades::symbol eq stockId)!!.docs
+        val insiderTrading: List<JsonNode> = stockInsiderTradingCollection!!.findOne(StockInsiderTrading::symbol eq stockId)!!.docs
 
-        val statsBasic: JsonNode? = stockStatsBasicCollection?.findOne(StockStatsBasic::symbol eq stockId)?.docs
-        node.set<JsonNode>("stockStatsBasic", statsBasic)
-
-        val previousDividends: JsonNode? = mapper.valueToTree(stockPreviousDividendCollection?.findOne(StockPreviousDividend::symbol eq stockId)?.docs)
-        node.set<JsonNode>("stockPreviousDividends", previousDividends)
-
-        val nextDividends: JsonNode? = stockNextDividendCollection?.findOne(StockNextDividend::symbol eq stockId)?.docs
-        node.set<JsonNode>("stockNextDividends", nextDividends)
-
-        val largestTrades: JsonNode? = stockLargestTradesCollection?.findOne(StockLargestTrades::symbol eq stockId)?.docs
-        node.set<JsonNode>("stockLargestTrades", largestTrades)
-
-        val insiderTrading: JsonNode? = mapper.valueToTree(stockInsiderTradingCollection?.findOne(StockInsiderTrading::symbol eq stockId)?.docs)
-        node.set<JsonNode>("stockInsiderTrading", insiderTrading)
-
-        return mapper.treeToValue(node)
+        return ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
     }
 }
