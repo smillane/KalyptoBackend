@@ -25,7 +25,6 @@ class StockQueriesService(
 ) {
     private val returnError: Flow<String> = flowOf("false")
     private val returnNotFound: Flow<String> = flowOf("notFound")
-    private val serverError: String = "Error"
     private val mapper = ObjectMapper()
     private val timePeriod: Long = 5L
 
@@ -60,31 +59,26 @@ class StockQueriesService(
         val currentTime = Clock.System.now()
         val node = mapper.createObjectNode()
         stockQuoteCollection?.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime))
-        node.set<JsonNode>("stockQuote", quote)
 
         val statsBasic: JsonNode = mapper.valueToTree(iexApiService.getStockStatsBasic(stockId))
         stockStatsBasicCollection?.updateOne(StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime))
-        node.set<JsonNode>("stockStatsBasic", statsBasic)
 
-        val insiderTrading: JsonNode = mapper.valueToTree(iexApiService.getLast15StockInsiderTrading(stockId))
+        val insiderTrading: List<JsonNode> = mapper.valueToTree(iexApiService.getLast15StockInsiderTrading(stockId))
         insiderTrading.reversed().forEach { stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it)) }
         stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
-        node.set<JsonNode>("stockInsiderTrading", insiderTrading)
 
-        val previousDividends: JsonNode = mapper.valueToTree(iexApiService.getStockPreviousDividends(stockId))
+        val previousDividends: List<JsonNode> = mapper.valueToTree(iexApiService.getStockPreviousDividends(stockId))
         previousDividends.reversed().forEach { stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, it)) }
         stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime)
-        node.set<JsonNode>("stockPreviousDividends", previousDividends)
 
         val nextDividends: JsonNode = mapper.valueToTree(iexApiService.getStockNextDividends(stockId))
         stockNextDividendCollection?.updateOne(StockNextDividend::symbol eq stockId,
             set(StockNextDividend::docs setTo nextDividends, StockNextDividend::lastUpdated setTo currentTime,
                 StockNextDividend::nextUpdate setTo Instant.parse(nextDividends.findValue("exDate").textValue())))
-        node.set<JsonNode>("stockNextDividends", nextDividends)
 
         val largestTrades: JsonNode = mapper.valueToTree(iexApiService.getStockLargestTrades(stockId))
         stockLargestTradesCollection?.updateOne(StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades[0], StockLargestTrades::lastUpdated setTo currentTime))
-        node.set<JsonNode>("stockLargestTrades", largestTrades)
+        ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
 
         return mapper.treeToValue(node)
     }
@@ -134,8 +128,8 @@ class StockQueriesService(
         if (insiderTradingFromDB != null) {
             if (!isToday(currentTime, insiderTradingFromDB.lastUpdated)) {
                 val insiderTradesFromAPI: JsonNode = mapper.valueToTree(iexApiService.getStockInsiderTradingFromLastUpdated(stockId, insiderTradingFromDB.lastUpdated))
-                stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, insiderTradesFromAPI))
-                stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
+                stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, insiderTradesFromAPI))
+                stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
             }
         }
     }
