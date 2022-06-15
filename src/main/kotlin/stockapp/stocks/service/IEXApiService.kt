@@ -56,10 +56,17 @@ class IEXApiService {
         .retrieve()
         .bodyToFlow()
 
-    fun getStockPreviousDividends(symbol: String): Flow<JsonNode> = WebClient
+    fun getStockPreviousTwoYearsDividends(symbol: String): Flow<JsonNode> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/dividends/2y?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getStockPreviousDividend(symbol: String): Flow<JsonNode> = WebClient
+        .create(iexBaseTimeSeries)
+        .get()
+        .uri("DIVIDENDS/$symbol/?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 

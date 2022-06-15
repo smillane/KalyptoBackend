@@ -37,8 +37,9 @@ class StockQueriesService(
     }
 
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
+    // maybe use a diff model to check, as might have quote for certain stocks displayed/updated, but nothing else
     suspend fun dbCheck(stockId: String): Boolean {
-        stockQuoteCollection?.findOne(StockQuote::symbol eq stockId) ?: return false
+        stockStatsBasicCollection?.findOne(StockQuote::symbol eq stockId) ?: return false
         return true
     }
 
@@ -66,7 +67,7 @@ class StockQueriesService(
         insiderTrading.reversed().forEach { stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it)) }
         stockInsiderTradingCollection?.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
 
-        val previousDividends: List<JsonNode> = mapper.valueToTree(iexApiService.getStockPreviousDividends(stockId))
+        val previousDividends: List<JsonNode> = mapper.valueToTree(iexApiService.getStockPreviousTwoYearsDividends(stockId))
         previousDividends.reversed().forEach { stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, it)) }
         stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime)
 
@@ -134,7 +135,8 @@ class StockQueriesService(
 
     private suspend fun updateLists(stockId: String, currentTime: Instant, nextDividends: StockNextDividend) {
         if (isToday(currentTime, nextDividends.nextUpdate) and !isToday(currentTime, nextDividends.lastUpdated)) {
-            updatePreviousDividends(stockId, currentTime, nextDividends.docs)
+            val previousDividend: List<JsonNode> = mapper.valueToTree(iexApiService.getStockPreviousDividend(stockId))
+            updatePreviousDividends(stockId, currentTime, previousDividend[0])
             stockNextDividendCollection?.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime)
         }
         if (!isToday(currentTime, nextDividends.lastUpdated)) {
@@ -151,8 +153,8 @@ class StockQueriesService(
         }
     }
 
-    private suspend fun updatePreviousDividends(stockId: String, currentTime: Instant, nextDividends: JsonNode) {
-        stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, nextDividends))
+    private suspend fun updatePreviousDividends(stockId: String, currentTime: Instant, lastDividend: JsonNode) {
+        stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, lastDividend))
         stockPreviousDividendCollection?.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime)
     }
 
