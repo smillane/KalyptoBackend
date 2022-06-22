@@ -12,7 +12,12 @@ class StockQueriesResource(
     val stockQueriesService: StockQueriesService
 ) {
     @GetMapping("/{stockID}")
-    suspend fun getStockInformation(@PathVariable("stockID") stockID: String): Any {
-        return stockQueriesService.getAllStockData(stockID)
+    suspend fun getStockInformation(@PathVariable("stockID") stockId: String): Any {
+        return stockQueriesService.getAllStockData(stockId)
+    }
+
+    @GetMapping("/{stockID}/quote")
+    suspend fun getStockQuote(@PathVariable("stockID") stockId: String): Any {
+        return stockQueriesService.getStockQuote(stockId)
     }
 }

@@ -58,7 +58,7 @@ class IEXApiService {
         .retrieve()
         .bodyToFlow()
 
-    fun getStockNextDividends(symbol: String): Flow<Map<String, Any>> = WebClient
+    fun getStockNextDividends(symbol: String): Flow<List<Map<String, Any>>> = WebClient
         .create(iexBase)
         .get()
         .uri("stock/$symbol/dividends/next?token=$iexToken")
