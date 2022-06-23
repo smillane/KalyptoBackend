@@ -1,11 +1,7 @@
 package stockapp.stocks.service
 
-import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.Instant
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.*
 
