@@ -2,6 +2,7 @@ package stockapp.stocks.service
 
 import com.mongodb.client.model.UpdateOptions
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.datetime.*
 import org.litote.kmongo.*
 import org.springframework.stereotype.Component
@@ -40,11 +41,13 @@ class StockQueriesService(
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
     suspend fun dbCheck(stockId: String, basicQuote: Boolean): Boolean {
         while (basicQuote) {
-            val temp = stockQuoteCollection.find(StockQuote::symbol eq stockId)
-            if (stockQuoteCollection.find(StockQuote::symbol eq stockId) == null) {return false}
+            val temp = stockQuoteCollection.find(StockQuote::symbol eq stockId).toFlow()
+            val temp2 = stockQuoteCollection.collection.find(StockQuote::symbol eq stockId).asFlow()
+            println(temp2)
+            if (temp == null) {return false}
             return true
         }
-        val temp = stockStatsBasicCollection.findOne(stockId)
+        val temp = stockStatsBasicCollection.find(StockStatsBasic::symbol eq stockId).toFlow()
         if (temp == null) {return false}
         return true
     }
