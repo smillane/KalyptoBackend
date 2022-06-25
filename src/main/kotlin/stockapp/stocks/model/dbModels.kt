@@ -1,13 +1,11 @@
 package stockapp.stocks.model
 
-import kotlinx.datetime.Instant
-
-data class StockQuote(val symbol: String, val lastUpdated: Instant, val docs: Map<String, Any>)
-data class StockStatsBasic(val symbol: String, val lastUpdated: Instant, val docs: Map<String, Any>)
-data class StockPreviousDividend(val symbol: String, val lastUpdated: Instant, val docs: List<Map<String, Any>>)
-data class StockNextDividend(val symbol: String, val nextUpdate: Instant, val lastUpdated: Instant, val docs: Map<String, Any>)
-data class StockLargestTrades(val symbol: String, val lastUpdated: Instant, val docs: List<Map<String, Any>>)
-data class StockInsiderTrading(val symbol: String, val lastUpdated: Instant, val docs: List<Map<String, Any>>)
+data class StockQuote(val symbol: String, val lastUpdated: String? = null, val docs: Map<String, Any>)
+data class StockStatsBasic(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)
+data class StockPreviousDividend(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
+data class StockNextDividend(val symbol: String, val nextUpdate: String, val lastUpdated: String, val docs: Map<String, Any>)
+data class StockLargestTrades(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
+data class StockInsiderTrading(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 
 data class ReturnStockData(val quote: Map<String, Any>, val stats: Map<String, Any>, val previousDividends: List<Map<String, Any>>, val nextDividend: Map<String, Any>, val largestTrades: List<Map<String, Any>>, val insiderTrading: List<Map<String, Any>>)
 

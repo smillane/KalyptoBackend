@@ -2,7 +2,6 @@ package stockapp.stocks.service
 
 import com.mongodb.client.model.UpdateOptions
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.reactive.asFlow
 import kotlinx.datetime.*
 import org.litote.kmongo.*
 import org.springframework.stereotype.Component
@@ -26,7 +25,6 @@ class StockQueriesService(
         if (!dbCheck(stockId, false)) {
             return apiCheck(stockId, false)
         }
-        val temp = 1
         updateDocs(stockId)
         return getDocsFromDB(stockId)
     }
@@ -35,21 +33,17 @@ class StockQueriesService(
         if (!dbCheck(stockId, true)) {
             return apiCheck(stockId, true)
         }
-        return updateQuote(stockId, Clock.System.now())
+        return updateQuote(stockId)
     }
 
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
     suspend fun dbCheck(stockId: String, basicQuote: Boolean): Boolean {
         while (basicQuote) {
-            val temp = stockQuoteCollection.find(StockQuote::symbol eq stockId).toFlow()
-            val temp2 = stockQuoteCollection.collection.find(StockQuote::symbol eq stockId).asFlow()
-            println(temp2)
-            if (temp == null) {return false}
-            return true
+            val temp = stockQuoteCollection.findOne(StockStatsBasic::symbol eq stockId)
+            return temp != null
         }
-        val temp = stockStatsBasicCollection.find(StockStatsBasic::symbol eq stockId).toFlow()
-        if (temp == null) {return false}
-        return true
+        val temp = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)
+        return temp != null
     }
 
     // call api for stock quote, the cheapest api call, if stock doesn't exist, won't cost api call
@@ -64,37 +58,52 @@ class StockQueriesService(
     }
 
     suspend fun getQuoteAndSave(stockId: String, quote: Map<String, Any>): Map<String, Any> {
-        return quote.apply { stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo Clock.System.now()), upsertTrue) }
+        return quote.apply {
+            stockQuoteCollection.updateOne(
+                StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo Clock.System.now().toString()), upsertTrue)
+        }
     }
 
-    private suspend fun updateQuote(stockId: String, currentTime: Instant): Map<String, Any> {
+    private suspend fun updateQuote(stockId: String): Map<String, Any> {
         val stockQuote: Map<String, Any> = iexApiService.getStockQuote(stockId).first()
-        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo currentTime))
-        return stockQuote
+        return stockQuote.apply {
+            stockQuoteCollection.updateOne(
+                StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo Clock.System.now().toString()))
+        }
     }
 
     suspend fun firstRunQueryAndSave(stockId: String, quote: Map<String, Any>): ReturnStockData {
-        val currentTime = Clock.System.now()
-        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime), upsertTrue)
+        val currentTime = Clock.System.now().toString()
+        stockQuoteCollection.updateOne(
+            StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo currentTime), upsertTrue)
 
         val statsBasic = iexApiService.getStockStatsBasic(stockId).first()
-        stockStatsBasicCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime), upsertTrue)
+        stockStatsBasicCollection.updateOne(
+            StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime), upsertTrue)
 
         val insiderTrading: List<Map<String, Any>> = iexApiService.getLast15StockInsiderTrading(stockId).first()
-        insiderTrading.reversed().forEach { stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it)) }
-        stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime, upsertTrue)
+        insiderTrading.reversed().forEach {
+            stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it))
+        }
+        stockInsiderTradingCollection.updateOne(
+            StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime, upsertTrue)
 
         val previousDividends: List<Map<String, Any>> = iexApiService.getStockPreviousTwoYearsDividends(stockId).first()
-        previousDividends.reversed().forEach { stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, it)) }
-        stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime, upsertTrue)
+        previousDividends.reversed().forEach {
+            stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, it))
+        }
+        stockPreviousDividendCollection.updateOne(
+            StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime, upsertTrue)
 
         val nextDividends: Map<String, Any> = iexApiService.getStockNextDividends(stockId).first()[0]
-        stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockId,
+        stockNextDividendCollection.updateOne(
+            StockNextDividend::symbol eq stockId,
                 set(StockNextDividend::docs setTo nextDividends, StockNextDividend::lastUpdated setTo currentTime,
-                        StockNextDividend::nextUpdate setTo Instant.parse(nextDividends.getValue("exDate").toString())), upsertTrue)
+                        StockNextDividend::nextUpdate setTo Instant.parse(nextDividends.getValue("exDate").toString()).toString()), upsertTrue)
 
         val largestTrades: List<Map<String, Any>> = iexApiService.getStockLargestTrades(stockId).first()
-        stockLargestTradesCollection.updateOne(StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime), upsertTrue)
+        stockLargestTradesCollection.updateOne(
+            StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime), upsertTrue)
 
         return ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
     }
@@ -106,7 +115,7 @@ class StockQueriesService(
     //
     suspend fun updateDocs(stockId: String) {
         val currentTime = Clock.System.now()
-        val lastUpdated = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.lastUpdated
+        val lastUpdated = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.lastUpdated.toInstant()
         if (updateIntervalCheck(currentTime, lastUpdated, timePeriod, true)) {
                 updateExtended(stockId, currentTime)
         }
@@ -120,16 +129,22 @@ class StockQueriesService(
 
     private suspend fun updateExtended(stockId: String, currentTime: Instant) {
         val stockQuote: Map<String, Any> = iexApiService.getStockQuote(stockId).first()
-        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo currentTime))
+        stockQuoteCollection.updateOne(
+            StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo currentTime.toString()))
     }
 
     private suspend fun updateDocs(stockId: String, currentTime: Instant) {
         val stockQuote: Map<String, Any> = iexApiService.getStockQuote(stockId).first()
-        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo currentTime))
+        stockQuoteCollection.updateOne(
+            StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo currentTime.toString()))
+
         val statsBasic: Map<String, Any> = iexApiService.getStockStatsBasic(stockId).first()
-        stockStatsBasicCollection.updateOne(StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime))
+        stockStatsBasicCollection.updateOne(
+            StockStatsBasic::symbol eq stockId, set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime.toString()))
+
         val largestTrades: List<Map<String, Any>> = iexApiService.getStockLargestTrades(stockId).first()
-        stockLargestTradesCollection.updateOne(StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime))
+        stockLargestTradesCollection.updateOne(
+            StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime.toString()))
     }
 
     private suspend fun updateAfterHours(stockId: String, currentTime: Instant) {
@@ -140,36 +155,44 @@ class StockQueriesService(
         val insiderTradingFromDB: StockInsiderTrading? =
                 stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)
         if (insiderTradingFromDB != null) {
-            if (!isToday(currentTime, insiderTradingFromDB.lastUpdated)) {
-                val insiderTradesFromAPI: List<Map<String, Any>> = iexApiService.getStockInsiderTradingFromLastUpdated(stockId, insiderTradingFromDB.lastUpdated).first()
-                insiderTradesFromAPI.reversed().forEach { stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it)) }
-                stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime)
+            if (!isToday(currentTime, insiderTradingFromDB.lastUpdated.toInstant())) {
+                val insiderTradesFromAPI: List<Map<String, Any>> = iexApiService.getStockInsiderTradingFromLastUpdated(
+                    stockId, insiderTradingFromDB.lastUpdated.toInstant()).first()
+
+                insiderTradesFromAPI.reversed().forEach { stockInsiderTradingCollection.updateOne(
+                    StockInsiderTrading::symbol eq stockId, push(StockInsiderTrading::docs, it))
+                }
+
+                stockInsiderTradingCollection.updateOne(
+                    StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime.toString())
             }
         }
     }
 
     private suspend fun updateDividends(stockId: String, currentTime: Instant, nextDividends: StockNextDividend) {
-        if (wasYesterday(currentTime, nextDividends.nextUpdate) and !isToday(currentTime, nextDividends.lastUpdated)) {
+        if (wasYesterday(currentTime, nextDividends.nextUpdate.toInstant()) and !isToday(currentTime, nextDividends.lastUpdated.toInstant())) {
             val previousDividend: List<Map<String, Any>> = iexApiService.getStockPreviousDividend(stockId).first()
             updatePreviousDividends(stockId, currentTime, previousDividend[0])
-            stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime)
+            stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime.toString())
         }
-        if (!isToday(currentTime, nextDividends.lastUpdated)) {
+        if (!isToday(currentTime, nextDividends.lastUpdated.toInstant())) {
             val nextDivFromApi: Map<String, Any> = iexApiService.getStockNextDividends(stockId).first()[0]
             if (nextDividends.docs != nextDivFromApi) {
                 stockNextDividendCollection.updateOne(
                         StockNextDividend::symbol eq stockId, set(StockNextDividend::docs setTo nextDivFromApi,
-                        StockNextDividend::nextUpdate setTo Instant.parse(nextDivFromApi.getValue("exDate").toString()),
-                        StockNextDividend::lastUpdated setTo currentTime))
+                        StockNextDividend::nextUpdate setTo Instant.parse(nextDivFromApi.getValue("exDate").toString()).toString(),
+                        StockNextDividend::lastUpdated setTo currentTime.toString()))
             }
         } else {
-            stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime)
+            stockNextDividendCollection.updateOne(StockNextDividend::symbol eq stockId, StockNextDividend::lastUpdated eq currentTime.toString())
         }
     }
 
     private suspend fun updatePreviousDividends(stockId: String, currentTime: Instant, lastDividend: Map<String, Any>) {
-        stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, lastDividend))
-        stockPreviousDividendCollection.updateOne(StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime)
+        stockPreviousDividendCollection.updateOne(
+            StockPreviousDividend::symbol eq stockId, push(StockPreviousDividend::docs, lastDividend))
+        stockPreviousDividendCollection.updateOne(
+            StockPreviousDividend::symbol eq stockId, StockPreviousDividend::lastUpdated eq currentTime.toString())
     }
 
     suspend fun getDocsFromDB(stockId: String): ReturnStockData {
