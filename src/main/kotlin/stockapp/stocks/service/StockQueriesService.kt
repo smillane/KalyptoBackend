@@ -105,7 +105,8 @@ class StockQueriesService(
         stockLargestTradesCollection.updateOne(
             StockLargestTrades::symbol eq stockId, set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime), upsertTrue)
 
-        return ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
+        return ReturnStockData(
+            quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
     }
 
     // logic to reduce amount of db/api calls, some api calls only update after market close
@@ -203,6 +204,7 @@ class StockQueriesService(
         val largestTrades: List<Map<String, Any>> = stockLargestTradesCollection.findOne(StockLargestTrades::symbol eq stockId)!!.docs
         val insiderTrading: List<Map<String, Any>> = stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)!!.docs
 
-        return ReturnStockData(quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
+        return ReturnStockData(
+            quote = quote, stats = statsBasic, insiderTrading = insiderTrading, previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
     }
 }
