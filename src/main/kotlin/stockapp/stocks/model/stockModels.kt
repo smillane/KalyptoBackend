@@ -1,6 +1,6 @@
 package stockapp.stocks.model
 
-data class StockQuote(val symbol: String, val lastUpdated: String? = null, val docs: Map<String, Any>)
+data class StockQuote(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)
 data class StockStatsBasic(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)
 data class StockPreviousDividend(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 data class StockNextDividend(val symbol: String, val nextUpdate: String, val lastUpdated: String, val docs: Map<String, Any>)

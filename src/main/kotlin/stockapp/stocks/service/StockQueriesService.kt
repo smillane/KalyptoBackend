@@ -198,15 +198,12 @@ class StockQueriesService(
     }
 
     suspend fun getDocsFromDB(stockId: String): ReturnStockData {
-        val quote: Map<String, Any> = stockQuoteCollection.findOne(StockStatsBasic::symbol eq stockId)!!.docs
-        val statsBasic: Map<String, Any> = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.docs
-        val previousDividends: List<Map<String, Any>> = stockPreviousDividendCollection.findOne(StockPreviousDividend::symbol eq stockId)!!.docs
-        val nextDividends: Map<String, Any> = stockNextDividendCollection.findOne(StockNextDividend::symbol eq stockId)!!.docs
-        val largestTrades: List<Map<String, Any>> = stockLargestTradesCollection.findOne(StockLargestTrades::symbol eq stockId)!!.docs
-        val insiderTrading: List<Map<String, Any>> = stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)!!.docs
-
         return ReturnStockData(
-            quote = quote, stats = statsBasic, insiderTrading = insiderTrading,
-            previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades)
+            quote = stockQuoteCollection.findOne(StockStatsBasic::symbol eq stockId)!!.docs,
+            stats = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.docs,
+            insiderTrading = stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)!!.docs,
+            previousDividends = stockPreviousDividendCollection.findOne(StockPreviousDividend::symbol eq stockId)!!.docs,
+            nextDividend = stockNextDividendCollection.findOne(StockNextDividend::symbol eq stockId)!!.docs,
+            largestTrades = stockLargestTradesCollection.findOne(StockLargestTrades::symbol eq stockId)!!.docs)
     }
 }
