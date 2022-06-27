@@ -50,6 +50,7 @@ class StockQueriesService(
     // if it exists, will run first run query, and will save that return data into db
     suspend fun apiCheck(stockId: String, basicQuote: Boolean): Any {
         val stockQuote = iexApiService.getStockQuote(stockId).first()
+        if (stockQuote.isNullOrEmpty()) return false
         return if (basicQuote) {
             getQuoteAndSave(stockId, stockQuote)
         } else {
@@ -66,9 +67,9 @@ class StockQueriesService(
 
     private suspend fun updateQuote(stockId: String): Map<String, Any> {
         val stockQuote: Map<String, Any> = iexApiService.getStockQuote(stockId).first()
-        return stockQuote.apply {
+        return iexApiService.getStockQuote(stockId).first().also {
             stockQuoteCollection.updateOne(
-                StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo stockQuote, StockQuote::lastUpdated setTo Clock.System.now().toString()))
+                StockStatsBasic::symbol eq stockId, set(StockQuote::docs setTo it, StockQuote::lastUpdated setTo Clock.System.now().toString()))
         }
     }
 
