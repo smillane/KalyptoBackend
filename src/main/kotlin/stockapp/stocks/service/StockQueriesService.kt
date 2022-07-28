@@ -115,7 +115,12 @@ class StockQueriesService(
     // if stockQuote was updated today, before market close, most up to date
     // if stockQuote was updated today, before market close while market is close, update daily api calls
     // check when nextDividend ex-date is, if is today, add to pastDividends list and query once a day until nextDividend ex-date isn't the same
-    //
+
+
+    // look at when some api calls update, some only update at 6pm, 6am, 11pm, etc
+    // some only update on fridays (such as oil?)
+
+
     suspend fun updateDocs(stockId: String) {
         val currentTime = Clock.System.now()
         val lastUpdated = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.lastUpdated.toInstant()

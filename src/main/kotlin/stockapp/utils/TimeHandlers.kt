@@ -122,4 +122,3 @@ fun isExtendedHours(time: Instant): Boolean {
     }
     return false
 }
-
