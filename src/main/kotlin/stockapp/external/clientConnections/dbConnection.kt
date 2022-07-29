@@ -5,6 +5,7 @@ import com.mongodb.ConnectionString
 import org.litote.kmongo.reactivestreams.KMongo
 
 import stockapp.stocks.model.*
+import stockapp.users.model.*
 
 val connectionString: ConnectionString = ConnectionString(System.getenv("MONGODB_URI"))
 val client = KMongo.createClient(connectionString).coroutine
@@ -16,3 +17,5 @@ val stockPreviousDividendCollection =  database.getCollection<StockPreviousDivid
 val stockNextDividendCollection =  database.getCollection<StockNextDividend>()
 val stockLargestTradesCollection =  database.getCollection<StockLargestTrades>()
 val stockInsiderTradingCollection =  database.getCollection<StockInsiderTrading>()
+
+val userLists =  database.getCollection<UserListsModel>()
