@@ -22,20 +22,20 @@ class UserResource(
     }
 
     @PostMapping("/{userID}/list")
-    suspend fun addUserList(@PathVariable("userID") userID: String,
-                            @PathVariable("list") list: IndividualList) {
+    suspend fun addUserList(@PathVariable("userID") userID: String, @PathVariable("list") list: IndividualList) {
         userInformation.addList(userID, list)
     }
 
     @PutMapping("/{userID}/list")
-    suspend fun updateUserList(@PathVariable("userID") userID: String,
-                               @PathVariable("list")list: Map<ListName, Map<String, Number>>) {
+    suspend fun updateUserList(
+        @PathVariable("userID") userID: String,
+        @PathVariable("list") list: Map<ListName, Map<String, Number>>,
+    ) {
         userInformation.updateList(userID, list)
     }
 
     @PutMapping("/{userID}/list/{name}")
-    suspend fun updateListName(@PathVariable("userID") userID: String,
-                               @PathVariable("listName") listName: String) {
+    suspend fun updateListName(@PathVariable("userID") userID: String, @PathVariable("listName") listName: String) {
         userInformation.updateListName(userID, listName)
     }
 }
