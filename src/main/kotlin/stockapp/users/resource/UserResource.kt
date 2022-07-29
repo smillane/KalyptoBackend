@@ -28,9 +28,7 @@ class UserResource(
 
     @PutMapping("/{userID}/list")
     suspend fun updateUserList(
-        @PathVariable("userID") userID: String,
-        @PathVariable("list") list: Map<ListName, Map<String, Number>>,
-    ) {
+        @PathVariable("userID") userID: String, @PathVariable("list") list: Map<ListName, Map<String, Number>>) {
         userInformation.updateList(userID, list)
     }
 
