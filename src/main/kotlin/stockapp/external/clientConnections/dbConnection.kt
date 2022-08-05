@@ -18,4 +18,4 @@ val stockNextDividendCollection =  database.getCollection<StockNextDividend>()
 val stockLargestTradesCollection =  database.getCollection<StockLargestTrades>()
 val stockInsiderTradingCollection =  database.getCollection<StockInsiderTrading>()
 
-val userLists =  database.getCollection<UserListsModel>()
+val userLists =  database.getCollection<UserLists>()
