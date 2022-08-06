@@ -8,9 +8,7 @@ import stockapp.stocks.service.StockQueriesService
 
 @RestController
 @RequestMapping("/stocks/")
-class StockQueriesResource(
-    val stockQueriesService: StockQueriesService
-) {
+class StockQueriesResource(val stockQueriesService: StockQueriesService) {
     @GetMapping("/{stockID}")
     suspend fun getStockInformation(
         @PathVariable("stockID") stockID: String): Any {

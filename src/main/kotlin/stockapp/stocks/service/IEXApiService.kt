@@ -7,7 +7,6 @@ import org.springframework.web.reactive.function.client.*
 
 @Service
 class IEXApiService {
-
     private val iexToken: String = System.getenv("IEX_PUBLIC_TOKEN")
     private val iexBase: String = "https://sandbox.iexapis.com/stable/"
     private val iexBaseTimeSeries: String = "https://sandbox.iexapis.com/stable/time-series/"

@@ -14,9 +14,7 @@ import stockapp.users.service.UserInformation
 
 @RestController
 @RequestMapping("/users/")
-class UserResource(
-    val userInformation: UserInformation
-) {
+class UserResource(val userInformation: UserInformation) {
     @GetMapping("/{userID}")
     suspend fun getUserLists(
         @PathVariable("userID") userID: String): CoroutineFindPublisher<UserLists> {
