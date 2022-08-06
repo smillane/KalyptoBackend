@@ -3,9 +3,11 @@ package stockapp.users.service
 import com.mongodb.client.model.UpdateOptions
 import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
+import org.springframework.stereotype.Component
 import stockapp.external.clientConnections.userLists
 import stockapp.users.model.*
 
+@Component
 class UserInformation {
     private val upsertTrue = UpdateOptions().upsert(true)
 
