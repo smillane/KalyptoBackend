@@ -15,9 +15,7 @@ import stockapp.utils.wasYesterday
 
 
 @Component
-class StockQueriesService(
-        val iexApiService: IEXApiService,
-) {
+class StockQueriesService(val iexApiService: IEXApiService) {
     private val timePeriod: Long = 5L
     private val upsertTrue = UpdateOptions().upsert(true)
 
