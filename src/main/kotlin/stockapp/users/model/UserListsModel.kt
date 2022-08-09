@@ -1,9 +1,18 @@
 package stockapp.users.model
 
-import org.bson.codecs.pojo.annotations.BsonProperty
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Stock(val name: String)
-data class Watchlist(@BsonProperty(useDiscriminator = true) val list: List<Stock>)
+
+@Serializable
+data class Watchlist(val list: List<Stock>)
+
+@Serializable
 data class WatchlistName(val name: String)
-data class WatchlistMap(@BsonProperty(useDiscriminator = true) val watchlistMap: Map<WatchlistName, Watchlist>)
-data class UserLists(val userID: String, @BsonProperty(useDiscriminator = true) val userLists: List<WatchlistMap>)
+
+@Serializable
+data class WatchlistMap(val watchlistMap: Map<WatchlistName, Watchlist>)
+
+@Serializable
+data class UserLists(val userID: String, val userLists: List<WatchlistMap>)
