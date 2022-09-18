@@ -17,5 +17,10 @@ val stockPreviousDividendCollection =  database.getCollection<StockPreviousDivid
 val stockNextDividendCollection =  database.getCollection<StockNextDividend>()
 val stockLargestTradesCollection =  database.getCollection<StockLargestTrades>()
 val stockInsiderTradingCollection =  database.getCollection<StockInsiderTrading>()
+val stockFinancials =  database.getCollection<StockFinancials>()
+val stockInsiderSummary =  database.getCollection<StockInsiderSummary>()
+val stockInstitutionalOwnership =  database.getCollection<StockInstitutionalOwnership>()
+val stockPeerGroup =  database.getCollection<StockPeerGroup>()
+val stockCompanyInfo =  database.getCollection<StockCompanyInfo>()
 
 val userLists =  database.getCollection<UserLists>()
