@@ -36,16 +36,23 @@ class StockQueriesService(val iexApiService: IEXApiService) {
 
     suspend fun getInsiderTrading(stockId: String): Any {
         if (!dbCheck(stockId, true)) {
-            return apiCheck(stockId, true)
+            return apiCheck(stockId, false)
         }
-        return TODO()
+        return stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)!!.docs
     }
 
     suspend fun getDividends(stockId: String): Any {
         if (!dbCheck(stockId, true)) {
-            return apiCheck(stockId, true)
+            return apiCheck(stockId, false)
         }
-        return TODO()
+        return stockPreviousDividendCollection.findOne(StockPreviousDividend::symbol eq stockId)!!.docs
+    }
+
+    suspend fun getNews(stockId: String): Any {
+        if (!dbCheck(stockId, true)) {
+            basicApiCheck(stockId)
+        }
+        return iexApiService.getStockNews(stockId).first()
     }
 
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
@@ -56,6 +63,11 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         }
         val temp = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)
         return temp != null
+    }
+
+    suspend fun basicApiCheck(stockId: String): Boolean {
+        val stockQuote = iexApiService.getStockQuote(stockId).first()
+        return !stockQuote.isNullOrEmpty()
     }
 
     // call api for stock quote, the cheapest api call, if stock doesn't exist, won't cost api call

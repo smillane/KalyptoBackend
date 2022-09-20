@@ -36,4 +36,11 @@ class StockQueriesResource(val stockQueriesService: StockQueriesService) {
     ): Any {
         return stockQueriesService.getDividends(stockID)
     }
+
+    @GetMapping("/news")
+    suspend fun getNews(
+        @PathVariable("stockID") stockID: String,
+    ): Any {
+        return stockQueriesService.getNews(stockID)
+    }
 }
