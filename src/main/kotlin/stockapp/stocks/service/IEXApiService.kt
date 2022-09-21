@@ -79,7 +79,7 @@ class IEXApiService {
     fun getStockNews(symbol: String): Flow<List<Map<String, Any>>> = WebClient
         .create(iexBase)
         .get()
-        .uri("/data/CORE/NEWS/$symbol?last=1&token=$iexToken")
+        .uri("/data/CORE/NEWS/$symbol?last=10&token=$iexToken")
         .retrieve()
         .bodyToFlow()
 

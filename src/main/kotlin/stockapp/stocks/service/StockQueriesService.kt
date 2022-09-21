@@ -49,7 +49,9 @@ class StockQueriesService(val iexApiService: IEXApiService) {
 
     suspend fun getNews(stockId: String): Any {
         if (!dbCheck(stockId, true)) {
-            basicApiCheck(stockId)
+            if (basicApiCheck(stockId)) {
+                return iexApiService.getStockNews(stockId).first()
+            }
         }
         return iexApiService.getStockNews(stockId).first()
     }
