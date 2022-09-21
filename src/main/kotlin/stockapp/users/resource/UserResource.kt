@@ -17,14 +17,16 @@ import stockapp.users.service.UserInformation
 class UserResource(val userInformation: UserInformation) {
     @GetMapping("/{userID}")
     suspend fun getUserLists(
-        @PathVariable("userID") userID: String): CoroutineFindPublisher<UserLists> {
+        @PathVariable("userID") userID: String,
+    ): CoroutineFindPublisher<UserLists> {
         return userInformation.getUsersLists(userID)
     }
 
     @PostMapping("/{userID}/watchlist/{watchlistName}")
     suspend fun addWatchlist(
         @PathVariable("userID") userID: String,
-        @PathVariable("watchlistName") watchlistName: String) {
+        @PathVariable("watchlistName") watchlistName: String,
+    ) {
         userInformation.addWatchlist(userID, watchlistName)
     }
 
@@ -32,7 +34,8 @@ class UserResource(val userInformation: UserInformation) {
     suspend fun addStockToWatchlist(
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
-        @PathVariable("stock") stock: Stock) {
+        @PathVariable("stock") stock: Stock,
+    ) {
         userInformation.addStockToWatchlist(userID, watchlistName, stock)
     }
 
@@ -40,14 +43,16 @@ class UserResource(val userInformation: UserInformation) {
     suspend fun updateWatchlist(
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
-        @PathVariable("list") list: List<Stock>) {
+        @PathVariable("list") list: List<Stock>,
+    ) {
         userInformation.updateWatchlist(userID, watchlistName, list)
     }
 
     @PutMapping("/{userID}/watchlist/{watchlistName}")
     suspend fun updateWatchlistName(
         @PathVariable("userID") userID: String,
-        @PathVariable("watchlistName") watchlistName: String) {
+        @PathVariable("watchlistName") watchlistName: String,
+    ) {
         userInformation.updateWatchlistName(userID, watchlistName)
     }
 
@@ -55,14 +60,16 @@ class UserResource(val userInformation: UserInformation) {
     suspend fun deleteStockFromWatchlist(
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
-        @PathVariable("stock") stock: String) {
+        @PathVariable("stock") stock: String,
+    ) {
         userInformation.deleteStockFromWatchlist(userID, watchlistName, stock)
     }
 
     @DeleteMapping("/{userID}/watchlist/{watchlistName}")
     suspend fun deleteWatchlist(
         @PathVariable("userID") userID: String,
-        @PathVariable("watchlistName") watchlistName: String) {
+        @PathVariable("watchlistName") watchlistName: String,
+    ) {
         userInformation.deleteWatchlist(userID, watchlistName)
     }
 }
