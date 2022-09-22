@@ -68,14 +68,14 @@ class StockQueriesService(val iexApiService: IEXApiService) {
 
     suspend fun basicApiCheck(stockId: String): Boolean {
         val stockQuote = iexApiService.getStockQuote(stockId).first()
-        return !stockQuote.isNullOrEmpty()
+        return stockQuote.isNotEmpty()
     }
 
     // call api for stock quote, the cheapest api call, if stock doesn't exist, won't cost api call
     // if it exists, will run first run query, and will save that return data into db
-    suspend fun apiCheck(stockId: String, basicQuote: Boolean): Any {
+    suspend fun apiCheck(stockId: String, basicQuote: Boolean): Any? {
         val stockQuote = iexApiService.getStockQuote(stockId).first()
-        if (stockQuote.isNullOrEmpty()) return false
+        if (stockQuote.isEmpty()) return null
         return if (basicQuote) {
             getQuoteAndSave(stockId, stockQuote)
         } else {
