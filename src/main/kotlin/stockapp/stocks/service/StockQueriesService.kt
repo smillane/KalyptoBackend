@@ -18,7 +18,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     private val timePeriod: Long = 1L
     private val upsertTrue = UpdateOptions().upsert(true)
 
-    suspend fun getAllStockData(stockId: String): Any {
+    suspend fun getAllStockData(stockId: String): Any? {
         if (!dbCheck(stockId, false)) {
             return apiCheck(stockId, false)
         }
@@ -26,21 +26,21 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         return getDocsFromDB(stockId)
     }
 
-    suspend fun getStockQuote(stockId: String): Any {
+    suspend fun getStockQuote(stockId: String): Any? {
         if (!dbCheck(stockId, true)) {
             return apiCheck(stockId, true)
         }
         return updateQuote(stockId)
     }
 
-    suspend fun getInsiderTrading(stockId: String): Any {
+    suspend fun getInsiderTrading(stockId: String): Any? {
         if (!dbCheck(stockId, true)) {
             return apiCheck(stockId, false)
         }
         return stockInsiderTradingCollection.findOne(StockInsiderTrading::symbol eq stockId)!!.docs
     }
 
-    suspend fun getDividends(stockId: String): Any {
+    suspend fun getDividends(stockId: String): Any? {
         if (!dbCheck(stockId, true)) {
             return apiCheck(stockId, false)
         }
