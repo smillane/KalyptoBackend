@@ -59,7 +59,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
     suspend fun dbCheck(stockId: String, basicQuote: Boolean): Boolean {
         while (basicQuote) {
-            val temp = stockQuoteCollection.findOne(StockStatsBasic::symbol eq stockId)
+            val temp = stockQuoteCollection.findOne(StockQuote::symbol eq stockId)
             return temp != null
         }
         val temp = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)
@@ -86,7 +86,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     suspend fun getQuoteAndSave(stockId: String, quote: Map<String, Any>): Map<String, Any> {
         return quote.apply {
             stockQuoteCollection.updateOne(
-                StockStatsBasic::symbol eq stockId,
+                StockQuote::symbol eq stockId,
                 set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo Clock.System.now().toString()),
                 upsertTrue)
         }

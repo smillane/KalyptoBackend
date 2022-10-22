@@ -12,28 +12,28 @@ class StockQueriesResource(val stockQueriesService: StockQueriesService) {
     @GetMapping
     suspend fun getStockInformation(
         @PathVariable("stockID") stockID: String,
-    ): Any {
+    ): Any? {
         return stockQueriesService.getAllStockData(stockID)
     }
 
     @GetMapping("/quote")
     suspend fun getStockQuote(
         @PathVariable("stockID") stockID: String,
-    ): Any {
+    ): Any? {
         return stockQueriesService.getStockQuote(stockID)
     }
 
     @GetMapping("/insiderTrading")
     suspend fun getInsiderTrading(
         @PathVariable("stockID") stockID: String,
-    ): Any {
+    ): Any? {
         return stockQueriesService.getInsiderTrading(stockID)
     }
 
     @GetMapping("/dividends")
     suspend fun getDividends(
         @PathVariable("stockID") stockID: String,
-    ): Any {
+    ): Any? {
         return stockQueriesService.getDividends(stockID)
     }
 
