@@ -1,4 +1,4 @@
-package stockapp.users.model
+package kalypto.users.model
 
 import kotlinx.serialization.Serializable
 

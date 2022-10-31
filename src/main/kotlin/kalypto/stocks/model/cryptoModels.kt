@@ -1,4 +1,4 @@
-package stockapp.stocks.model
+package kalypto.stocks.model
 
 data class CryptoQuote(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)
 data class CryptoPrice(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)

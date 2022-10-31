@@ -1,4 +1,4 @@
-package stockapp.stocks.service
+package kalypto.stocks.service
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
@@ -9,13 +9,20 @@ import org.springframework.web.reactive.function.client.*
 class IEXApiService {
     private val iexToken: String = System.getenv("IEX_PUBLIC_TOKEN")
     private val iexBase: String = "https://sandbox.iexapis.com/stable/"
-    private val iexCore: String = "https://kalypto.iex.cloud/v1/"
+    private val iexCore: String = "https://cloud.iexapis.com/v1/"
     private val iexBaseTimeSeries: String = "https://sandbox.iexapis.com/stable/time-series/"
 
     fun getStockQuote(symbol: String): Flow<Map<String, Any>> = WebClient
+        .create(iexCore)
+        .get()
+        .uri("data/CORE/QUOTE/$symbol?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getStockStats(symbol: String): Flow<Map<String, Any>> = WebClient
         .create(iexBase)
         .get()
-        .uri("stock/$symbol/quote?token=$iexToken")
+        .uri("stock/$symbol/stats?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
@@ -26,10 +33,10 @@ class IEXApiService {
         .retrieve()
         .bodyToFlow()
 
-    fun getLast15StockInsiderTrading(symbol: String): Flow<List<Map<String, Any>>> = WebClient
+    fun getLast30StockInsiderTrading(symbol: String): Flow<List<Map<String, Any>>> = WebClient
         .create(iexBaseTimeSeries)
         .get()
-        .uri("insider_transactions/$symbol?last=15&token=$iexToken")
+        .uri("insider_transactions/$symbol?last=30&token=$iexToken")
         .retrieve()
         .bodyToFlow()
 
@@ -90,6 +97,13 @@ class IEXApiService {
         .retrieve()
         .bodyToFlow()
 
+    fun getStockFundamentalValuations(symbol: String): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("/data/CORE/FUNDAMENTALVALUATIONS/$symbol?last=1&token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
     fun getStockFundamentals(symbol: String): Flow<List<Map<String, Any>>> = WebClient
         .create(iexBase)
         .get()
@@ -115,6 +129,34 @@ class IEXApiService {
         .create(iexBase)
         .get()
         .uri("/data/CORE/COMPANY/$symbol?last=1&token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getMostActive(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/mostactive?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getGainers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/gainers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getLosers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/losers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getVolume(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/iexvolume?token=$iexToken")
         .retrieve()
         .bodyToFlow()
 }

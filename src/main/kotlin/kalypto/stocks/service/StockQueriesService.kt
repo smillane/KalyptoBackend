@@ -1,4 +1,4 @@
-package stockapp.stocks.service
+package kalypto.stocks.service
 
 import com.mongodb.client.model.UpdateOptions
 import kotlinx.coroutines.flow.*
@@ -6,17 +6,41 @@ import kotlinx.datetime.*
 import org.litote.kmongo.*
 import org.springframework.stereotype.Component
 
-import stockapp.external.clientConnections.*
-import stockapp.stocks.model.*
-import stockapp.utils.isToday
-import stockapp.utils.updateAfterMarketClose
-import stockapp.utils.updateIntervalCheck
+import kalypto.external.clientConnections.*
+import kalypto.stocks.model.*
+import kalypto.utils.isToday
+import kalypto.utils.updateAfterMarketClose
+import kalypto.utils.updateIntervalCheck
 
 
 @Component
 class StockQueriesService(val iexApiService: IEXApiService) {
     private val timePeriod: Long = 1L
     private val upsertTrue = UpdateOptions().upsert(true)
+
+    suspend fun getMostActive(): List<Map<String, Any>> {
+        val mostActive = iexApiService.getMostActive().first()
+        mostActive.forEach { updateQuote(it["symbol"] as String, it) }
+        return mostActive
+    }
+
+    suspend fun getGainers(): List<Map<String, Any>> {
+        val gainers = iexApiService.getGainers().first()
+        gainers.forEach { updateQuote(it["symbol"] as String, it) }
+        return gainers
+    }
+
+    suspend fun getLosers(): List<Map<String, Any>> {
+        val losers = iexApiService.getLosers().first()
+        losers.forEach { updateQuote(it["symbol"] as String, it) }
+        return losers
+    }
+
+    suspend fun getVolume(): List<Map<String, Any>> {
+        val volume = iexApiService.getVolume().first()
+        volume.forEach { updateQuote(it["symbol"] as String, it) }
+        return volume
+    }
 
     suspend fun getAllStockData(stockId: String): Any? {
         if (!dbCheck(stockId, false)) {
@@ -27,10 +51,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     }
 
     suspend fun getStockQuote(stockId: String): Any? {
-        if (!dbCheck(stockId, true)) {
-            return apiCheck(stockId, true)
-        }
-        return updateQuote(stockId)
+        return getAndUpdateQuote(stockId)
     }
 
     suspend fun getInsiderTrading(stockId: String): Any? {
@@ -47,7 +68,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         return stockPreviousDividendCollection.findOne(StockPreviousDividend::symbol eq stockId)!!.docs
     }
 
-    suspend fun getNews(stockId: String): Any {
+    suspend fun getStockNews(stockId: String): Any {
         if (!dbCheck(stockId, true)) {
             if (basicApiCheck(stockId)) {
                 return iexApiService.getStockNews(stockId).first()
@@ -92,7 +113,7 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         }
     }
 
-    private suspend fun updateQuote(stockId: String): Map<String, Any> {
+    private suspend fun getAndUpdateQuote(stockId: String): Map<String, Any> {
         return iexApiService.getStockQuote(stockId).first().also {
             stockQuoteCollection.updateOne(
                 StockStatsBasic::symbol eq stockId,
@@ -100,7 +121,13 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         }
     }
 
-    suspend fun firstRunQueryAndSave(stockId: String, quote: Map<String, Any>): ReturnStockData {
+    private suspend fun updateQuote(stockId: String, quote: Map<String, Any>) {
+        stockQuoteCollection.updateOne(StockStatsBasic::symbol eq stockId,
+            set(StockQuote::docs setTo quote, StockQuote::lastUpdated setTo Clock.System.now().toString()))
+        }
+    }
+
+    suspend fun firstRunQueryAndSave(stockId: String, quote: Map<String, Any>): Any {
         val currentTime = Clock.System.now().toString()
         stockQuoteCollection.updateOne(
             StockStatsBasic::symbol eq stockId,
@@ -110,14 +137,6 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         stockStatsBasicCollection.updateOne(
             StockStatsBasic::symbol eq stockId,
             set(StockStatsBasic::docs setTo statsBasic, StockStatsBasic::lastUpdated setTo currentTime), upsertTrue)
-
-        val insiderTrading: List<Map<String, Any>> = iexApiService.getLast15StockInsiderTrading(stockId).first()
-        insiderTrading.reversed().forEach {
-            stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId,
-                push(StockInsiderTrading::docs, it))
-        }
-        stockInsiderTradingCollection.updateOne(
-            StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime, upsertTrue)
 
         val previousDividends: List<Map<String, Any>> = iexApiService.getStockPreviousTwoYearsDividends(stockId).first()
         previousDividends.reversed().forEach {
@@ -140,13 +159,13 @@ class StockQueriesService(val iexApiService: IEXApiService) {
             set(StockLargestTrades::docs setTo largestTrades, StockLargestTrades::lastUpdated setTo currentTime),
             upsertTrue)
 
-        val financials: List<Map<String, Any>> = iexApiService.getStockFinancials(stockId).first()
-        stockFinancials.updateOne(StockFinancials::symbol eq stockId, push(StockFinancials::docs, financials[0]))
-        stockFinancials.updateOne(StockFinancials::symbol eq stockId, StockFinancials::lastUpdated eq currentTime)
-
-        val insiderSummary: List<Map<String, Any>> = iexApiService.getStockInsiderSummary(stockId).first()
-        stockInsiderSummary.updateOne(StockInsiderSummary::symbol eq stockId,
-            set(StockInsiderSummary::docs setTo insiderSummary, StockInsiderSummary::lastUpdated setTo currentTime))
+        val insiderTrading: List<Map<String, Any>> = iexApiService.getLast15StockInsiderTrading(stockId).first()
+        insiderTrading.reversed().forEach {
+            stockInsiderTradingCollection.updateOne(StockInsiderTrading::symbol eq stockId,
+                push(StockInsiderTrading::docs, it))
+        }
+        stockInsiderTradingCollection.updateOne(
+            StockInsiderTrading::symbol eq stockId, StockInsiderTrading::lastUpdated eq currentTime, upsertTrue)
 
         val institutionalOwnership: List<Map<String, Any>> =
             iexApiService.getStockInstitutionalOwnership(stockId).first()
@@ -154,19 +173,46 @@ class StockQueriesService(val iexApiService: IEXApiService) {
             set(StockInstitutionalOwnership::docs setTo institutionalOwnership,
                 StockInstitutionalOwnership::lastUpdated setTo currentTime))
 
+        val insiderSummary: List<Map<String, Any>> = iexApiService.getStockInsiderSummary(stockId).first()
+        stockInsiderSummary.updateOne(StockInsiderSummary::symbol eq stockId,
+            set(StockInsiderSummary::docs setTo insiderSummary, StockInsiderSummary::lastUpdated setTo currentTime))
+
+        val financials: List<Map<String, Any>> = iexApiService.getStockFinancials(stockId).first()
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, push(StockFinancials::docs, financials[0]))
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, StockFinancials::lastUpdated eq currentTime)
+
+        val fundamentalValuations: List<Map<String, Any>> = iexApiService.getStockFundamentalValuations(stockId).first()
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, push(StockFinancials::docs, fundamentalValuations[0]))
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, StockFinancials::lastUpdated eq currentTime)
+
+        val fundamentals: List<Map<String, Any>> = iexApiService.getStockFundamentals(stockId).first()
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, push(StockFinancials::docs, fundamentals[0]))
+        stockFinancials.updateOne(StockFinancials::symbol eq stockId, StockFinancials::lastUpdated eq currentTime)
+
         val peerGroup: List<Map<String, Any>> = iexApiService.getStockPeerGroup(stockId).first()
         stockPeerGroup.updateOne(StockPeerGroup::symbol eq stockId,
             set(StockPeerGroup::docs setTo peerGroup, StockPeerGroup::lastUpdated setTo currentTime))
 
-        val companyInfo: List<Map<String, Any>> = iexApiService.getStockCompanyInfo(stockId).first()
+        val companyInfo: Map<String, Any> = iexApiService.getStockCompanyInfo(stockId).first()[0]
         stockCompanyInfo.updateOne(StockCompanyInfo::symbol eq stockId,
             set(StockCompanyInfo::docs setTo companyInfo, StockCompanyInfo::lastUpdated setTo currentTime))
 
         return ReturnStockData(
-            quote = quote, stats = statsBasic, insiderTrading = insiderTrading,
-            previousDividends = previousDividends, nextDividend = nextDividends, largestTrades = largestTrades,
-            financials = financials, insiderSummary = insiderSummary, institutionalOwnership = institutionalOwnership,
-            peerGroup = peerGroup, companyInfo = companyInfo)
+            quote = quote,
+            stats = stats,
+            basicStats = statsBasic,
+            previousDividends = previousDividends,
+            nextDividend = nextDividends,
+            largestTrades = largestTrades,
+            insiderTrading = insiderTrading,
+            institutionalOwnership = institutionalOwnership,
+            insiderSummary = insiderSummary,
+            financials = financials,
+            fundamentalValuations = fundamentalValuations,
+            fundamentals = fundamentals,
+            peerGroup = peerGroup,
+            companyInfo = companyInfo
+        )
     }
 
     // logic to reduce amount of db/api calls, some api calls only update after market close

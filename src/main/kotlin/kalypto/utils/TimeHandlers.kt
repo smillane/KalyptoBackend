@@ -1,4 +1,4 @@
-package stockapp.utils
+package kalypto.utils
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone

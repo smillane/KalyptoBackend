@@ -1,4 +1,4 @@
-package stockapp.users.resource
+package kalypto.users.resource
 
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
 import org.springframework.web.bind.annotation.GetMapping
@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import stockapp.users.model.Stock
-import stockapp.users.model.UserLists
-import stockapp.users.service.UserInformation
+import kalypto.users.model.Stock
+import kalypto.users.model.UserLists
+import kalypto.users.service.UserInformation
 
 @RestController
 @RequestMapping("/users/")

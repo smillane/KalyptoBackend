@@ -6,7 +6,6 @@
 #### Work in progress.
 
 - Refactor current endpoints, logic for when to update/save, what's saved
-- Add endpoints for dividends, insider trading for those pages
 - Add logic for calling iex api's for endpoints setup on frontend, that aren't in backend yet
 
 
