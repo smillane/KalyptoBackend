@@ -18,16 +18,12 @@ data class StockFinancials(val symbol: String, val lastUpdated: String, val docs
 data class StockFundamentalValuations(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 data class StockFundamentals(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 data class StockPeerGroup(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
-data class StockCompanyInfo(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
+data class StockCompanyInfo(val symbol: String, val lastUpdated: String, val docs: Map<String, Any>)
 
-data class MostActive(val lastUpdated: String, val docs: List<Map<String, Any>>)
-data class Gainers(val lastUpdated: String, val docs: List<Map<String, Any>>)
-data class Losers(val lastUpdated: String, val docs: List<Map<String, Any>>)
-data class Volume(val lastUpdated: String, val docs: List<Map<String, Any>>)
+data class DailyLists(val listType: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 
 data class ReturnStockData(
     val quote: Map<String, Any>,
-    val stats: Map<String, Any>,
     val basicStats: Map<String, Any>,
     val previousDividends: List<Map<String, Any>>,
     val nextDividend: Map<String, Any>,

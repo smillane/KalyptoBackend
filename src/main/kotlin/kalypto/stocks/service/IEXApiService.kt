@@ -159,4 +159,32 @@ class IEXApiService {
         .uri("stock/market/list/iexvolume?token=$iexToken")
         .retrieve()
         .bodyToFlow()
+
+    fun getPreMarketLosers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/premarket_losers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getPreMarketGainers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/premarket_gainers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getPostMarketLosers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/postmarket_losers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
+
+    fun getPostMarketGainers(): Flow<List<Map<String, Any>>> = WebClient
+        .create(iexBase)
+        .get()
+        .uri("stock/market/list/postmarket_gainers?token=$iexToken")
+        .retrieve()
+        .bodyToFlow()
 }

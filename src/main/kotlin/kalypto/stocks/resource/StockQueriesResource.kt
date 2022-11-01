@@ -63,4 +63,24 @@ class StockQueriesResource(val stockQueriesService: StockQueriesService) {
     suspend fun getVolume(): Any {
         return stockQueriesService.getVolume()
     }
+
+    @GetMapping("/preMarketLosers")
+    suspend fun getPreMarketLosers(): Any {
+        return stockQueriesService.getPreMarketLosers()
+    }
+
+    @GetMapping("/preMarketGainers")
+    suspend fun getPreMarketGainers(): Any {
+        return stockQueriesService.getPreMarketGainers()
+    }
+
+    @GetMapping("/postMarketGainers")
+    suspend fun getPostMarketGainers(): Any {
+        return stockQueriesService.getPostMarketGainers()
+    }
+
+    @GetMapping("/preMarketLosers")
+    suspend fun getPostMarketLosers(): Any {
+        return stockQueriesService.getPostMarketLosers()
+    }
 }
