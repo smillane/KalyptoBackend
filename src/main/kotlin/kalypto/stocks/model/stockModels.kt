@@ -10,6 +10,7 @@ data class StockNextDividend(
     val lastUpdated: String,
     val docs: Map<String, Any>,
 )
+
 data class StockLargestTrades(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 data class StockInsiderTrading(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)
 data class StockInstitutionalOwnership(val symbol: String, val lastUpdated: String, val docs: List<Map<String, Any>>)

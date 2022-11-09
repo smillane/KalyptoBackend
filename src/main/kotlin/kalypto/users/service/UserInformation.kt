@@ -2,54 +2,50 @@ package kalypto.users.service
 
 import com.mongodb.client.model.UpdateOptions
 import org.litote.kmongo.*
-import org.litote.kmongo.coroutine.CoroutineFindPublisher
 import org.springframework.stereotype.Component
-import kalypto.external.clientConnections.userLists
+
+import kalypto.external.clientConnections.userListsCollection
 import kalypto.users.model.*
+import kalypto.stocks.service.StockQueriesService
 
 @Component
-class UserInformation {
+class UserInformation(val stockQueriesService: StockQueriesService) {
     private val upsertTrue = UpdateOptions().upsert(true)
 
-    fun getUsersLists(userId: String): CoroutineFindPublisher<UserLists> {
-        return userLists.find(UserLists::userID eq userId)
+    suspend fun getUsersLists(userUID: String): List<UserLists> {
+        return userListsCollection.find(UserLists::userID eq userUID).toList().sortedBy { it.position }
     }
 
-    suspend fun addWatchlist(userId: String, listName: String) {
-        userLists.updateOne(UserLists::userID eq userId,
-            set(UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name setTo listName), upsertTrue)
+    suspend fun addWatchlist(userUID: String, watchlistName: String, position: Int) {
+        userListsCollection.insertOne(UserLists(userUID, position, watchlistName, emptyList()))
     }
 
-    suspend fun addStockToWatchlist(userId: String, watchlistName: String, stock: Stock) {
-        userLists.updateOne(
-            and(UserLists::userID eq userId,
-                UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name eq watchlistName),
-            push(UserLists::userLists / WatchlistMap::watchlistMap / Watchlist::list, stock), upsertTrue)
+    suspend fun addStockToWatchlist(userUID: String, watchlistName: String, position: Int, stock: String) {
+        if (stockQueriesService.basicApiCheck(stock)) {
+        }
+        userListsCollection.updateOne(and(UserLists::userID eq userUID, UserLists::watchlistName eq watchlistName, UserLists::position eq position), addToSet(UserLists::watchlist, stock))
     }
 
-    suspend fun deleteStockFromWatchlist(userId: String, watchlist: String, stock: String) {
-        userLists.deleteOne(
-            UserLists::userID eq userId,
-            UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name eq watchlist,
-            UserLists::userLists / WatchlistMap::watchlistMap / Watchlist::list / Stock::name eq stock)
+    suspend fun deleteStockFromWatchlist(userUID: String, watchlistName: String, position: Int, stock: String) {
+        userListsCollection.deleteOne(UserLists::userID eq userUID, UserLists::watchlistName eq watchlistName, UserLists::position eq position, UserLists::watchlist contains stock)
     }
 
-    suspend fun updateWatchlistName(userId: String, watchlistName: String) {
-        userLists.updateOne(
-            and(UserLists::userID eq userId,
-                UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name eq watchlistName),
-            set(UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name setTo watchlistName))
+    suspend fun updateWatchlistName(userUID: String, oldWatchlistName: String, position: Int, newWatchlistName: String) {
+        userListsCollection.updateOne(and(UserLists::userID eq userUID, UserLists::position eq position, UserLists::watchlistName eq oldWatchlistName), set(UserLists::watchlistName setTo newWatchlistName), upsertTrue)
     }
 
-    suspend fun updateWatchlist(userId: String, watchlistName: String, list: List<Stock>) {
-        userLists.updateOne(
-            and(UserLists::userID eq userId,
-                UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name eq watchlistName),
-            set(UserLists::userLists / WatchlistMap::watchlistMap / Watchlist::list setTo list), upsertTrue)
+    suspend fun updateWatchlist(userUID: String, watchlistName: String, position: Int, list: List<String>) {
+        userListsCollection.updateOne(
+            and(
+                UserLists::userID eq userUID,
+                UserLists::watchlistName eq watchlistName,
+                UserLists::position eq position
+            ),
+            setValue(UserLists::watchlist, list), upsertTrue
+        )
     }
 
-    suspend fun deleteWatchlist(userId: String, watchlist: String) {
-        userLists.deleteOne(UserLists::userID eq userId,
-            UserLists::userLists / WatchlistMap::watchlistMap / WatchlistName::name eq watchlist)
+    suspend fun deleteWatchlist(userUID: String, watchlist: String, position: Int) {
+        userListsCollection.deleteOne(UserLists::userID eq userUID, UserLists::position eq position, UserLists::watchlistName eq watchlist)
     }
 }

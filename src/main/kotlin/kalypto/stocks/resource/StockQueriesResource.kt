@@ -4,11 +4,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+
 import kalypto.stocks.service.StockQueriesService
 
 @RestController
 @RequestMapping("/stocks/")
 class StockQueriesResource(val stockQueriesService: StockQueriesService) {
+
     @GetMapping("{stockID}")
     suspend fun getStockInformation(
         @PathVariable("stockID") stockID: String,
@@ -74,13 +76,13 @@ class StockQueriesResource(val stockQueriesService: StockQueriesService) {
         return stockQueriesService.getPreMarketGainers()
     }
 
+    @GetMapping("/postMarketLosers")
+    suspend fun getPostMarketLosers(): Any {
+        return stockQueriesService.getPostMarketLosers()
+    }
+
     @GetMapping("/postMarketGainers")
     suspend fun getPostMarketGainers(): Any {
         return stockQueriesService.getPostMarketGainers()
-    }
-
-    @GetMapping("/preMarketLosers")
-    suspend fun getPostMarketLosers(): Any {
-        return stockQueriesService.getPostMarketLosers()
     }
 }

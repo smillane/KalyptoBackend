@@ -28,4 +28,4 @@ val stockCompanyInfoCollection = database.getCollection<StockCompanyInfo>()
 
 val dailyListCollection = database.getCollection<DailyLists>()
 
-val userLists = database.getCollection<UserLists>()
+val userListsCollection = database.getCollection<UserLists>()

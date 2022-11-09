@@ -13,25 +13,18 @@
 - Maybe pull data from twitter accounts
 
 
-- Create banner for every page that displays spy, qqq, btc, gold, vix (maybe few others, very minimal though)
-
-
 - https://iexcloud.io/docs/api/#u-s-holidays-and-trading-dates
 - just create dict with those dates/times, then logic to not update unless stock hasn't been checked since previous trading day - 1
 
 
 - https://iexcloud.io/docs/api/#list
-- create endpoint for most active, gainers, losers, sector performance, upcoming ipos
+- create endpoint for sector performance and upcoming ipos
 - for component on homepage, and have it be it's own page
-
-
-- Add logic for if nothing found in db, populate with last 4, 8, etc for endpoints such as past dividends, insider transactions
 
 
 - Add logic to update /Financials checkpoint for stock if earnings happens, and the latest financials in DB is previous
 - Add logic to get past 4 quarterly, and 4 yearly, financial information
 - Add insider ownership for top 5-8 insiders
-- Add Peer Groups for related stocks
 - Add sector performance for banner on homepage
 - Add commodities
 
@@ -39,4 +32,4 @@
 - add SEC document links using edgar (not super important)
 - might have to use puppeteer to gather information for stocks, and then send select information back for saving in db
 - such as links to diff forms, etc
-- adjust for rate limiting between queries
+- adjust for rate limiting between queries (use middleware most likely)
