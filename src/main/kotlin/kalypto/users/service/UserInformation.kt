@@ -23,15 +23,37 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
     suspend fun addStockToWatchlist(userUID: String, watchlistName: String, position: Int, stock: String) {
         if (stockQueriesService.basicApiCheck(stock)) {
         }
-        userListsCollection.updateOne(and(UserLists::userID eq userUID, UserLists::watchlistName eq watchlistName, UserLists::position eq position), addToSet(UserLists::watchlist, stock))
+        userListsCollection.updateOne(
+            and(
+                UserLists::userID eq userUID,
+                UserLists::watchlistName eq watchlistName,
+                UserLists::position eq position
+            ), addToSet(UserLists::watchlist, stock)
+        )
     }
 
     suspend fun deleteStockFromWatchlist(userUID: String, watchlistName: String, position: Int, stock: String) {
-        userListsCollection.deleteOne(UserLists::userID eq userUID, UserLists::watchlistName eq watchlistName, UserLists::position eq position, UserLists::watchlist contains stock)
+        userListsCollection.deleteOne(
+            UserLists::userID eq userUID,
+            UserLists::watchlistName eq watchlistName,
+            UserLists::position eq position,
+            UserLists::watchlist contains stock
+        )
     }
 
-    suspend fun updateWatchlistName(userUID: String, oldWatchlistName: String, position: Int, newWatchlistName: String) {
-        userListsCollection.updateOne(and(UserLists::userID eq userUID, UserLists::position eq position, UserLists::watchlistName eq oldWatchlistName), set(UserLists::watchlistName setTo newWatchlistName), upsertTrue)
+    suspend fun updateWatchlistName(
+        userUID: String,
+        oldWatchlistName: String,
+        position: Int,
+        newWatchlistName: String,
+    ) {
+        userListsCollection.updateOne(
+            and(
+                UserLists::userID eq userUID,
+                UserLists::position eq position,
+                UserLists::watchlistName eq oldWatchlistName
+            ), set(UserLists::watchlistName setTo newWatchlistName), upsertTrue
+        )
     }
 
     suspend fun updateWatchlist(userUID: String, watchlistName: String, position: Int, list: List<String>) {
@@ -46,6 +68,10 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
     }
 
     suspend fun deleteWatchlist(userUID: String, watchlist: String, position: Int) {
-        userListsCollection.deleteOne(UserLists::userID eq userUID, UserLists::position eq position, UserLists::watchlistName eq watchlist)
+        userListsCollection.deleteOne(
+            UserLists::userID eq userUID,
+            UserLists::position eq position,
+            UserLists::watchlistName eq watchlist
+        )
     }
 }
