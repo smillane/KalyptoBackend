@@ -22,6 +22,13 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
 
     suspend fun addStockToWatchlist(userUID: String, watchlistName: String, position: Int, stock: String) {
         if (stockQueriesService.basicApiCheck(stock)) {
+            userListsCollection.updateOne(
+                and(
+                    UserLists::userID eq userUID,
+                    UserLists::watchlistName eq watchlistName,
+                    UserLists::position eq position
+                ), addToSet(UserLists::watchlist, stock)
+            )
         }
         userListsCollection.updateOne(
             and(

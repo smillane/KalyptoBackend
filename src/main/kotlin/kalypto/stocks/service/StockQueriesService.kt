@@ -11,9 +11,7 @@ import kalypto.stocks.model.*
 import kalypto.utils.isToday
 import kalypto.utils.updateAfterMarketClose
 import kalypto.utils.updateIntervalCheck
-import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.server.ResponseStatusException
 
 
 @Component
@@ -133,8 +131,8 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     }
 
     suspend fun basicApiCheck(stockId: String): Boolean {
-        try {
-            return iexApiService.getStockQuote(stockId).first().apply {
+        return try {
+            iexApiService.getStockQuote(stockId).first().apply {
                 stockQuoteCollection.updateOne(
                     StockQuote::symbol eq stockId,
                     set(StockQuote::docs setTo this, StockQuote::lastUpdated setTo Clock.System.now().toString()),
@@ -145,8 +143,8 @@ class StockQueriesService(val iexApiService: IEXApiService) {
             println(e.statusCode)
             println(e.localizedMessage)
             println(e.statusText)
-            return false
-//            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.statusText)
+            false
+    //            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.statusText)
         }
     }
 
