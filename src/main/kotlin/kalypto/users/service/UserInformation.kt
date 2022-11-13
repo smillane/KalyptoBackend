@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import kalypto.external.clientConnections.userListsCollection
 import kalypto.users.model.*
 import kalypto.stocks.service.StockQueriesService
+import kotlinx.coroutines.flow.Flow
 
 @Component
 class UserInformation(val stockQueriesService: StockQueriesService) {
