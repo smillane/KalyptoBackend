@@ -60,13 +60,15 @@ fun updateAfterMarketClose(currentTime: Instant, lastUpdated: Instant): Boolean 
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date != currentTime.toLocalDateTime(TimeZone.of("EST")).date &&
         lastUpdated.toLocalDateTime(TimeZone.of("EST")).date != currentTime.toLocalDateTime(TimeZone.of("EST")).date.minus(
             1,
-            DateTimeUnit.DAY)
+            DateTimeUnit.DAY
+        )
     ) {
         return true
     }
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date.minus(
             1,
-            DateTimeUnit.DAY)
+            DateTimeUnit.DAY
+        )
     ) {
         if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).minute < TimePeriod.END.period) {
             return true
@@ -82,7 +84,8 @@ fun updateAfterMarketClose(currentTime: Instant, lastUpdated: Instant): Boolean 
 // return true if current time is after market closed and last updated was before market close
 fun updateOnlyAfterClose(currentTime: Instant, lastUpdated: Instant): Boolean {
     if (currentTime.toLocalDateTime(TimeZone.of("EST")).minute > TimePeriod.END.period && lastUpdated.toLocalDateTime(
-            TimeZone.of("EST")).minute < TimePeriod.END.period
+            TimeZone.of("EST")
+        ).minute < TimePeriod.END.period
     ) {
         return true
     }
@@ -102,7 +105,8 @@ fun isToday(currentTime: Instant, lastUpdated: Instant): Boolean {
 fun wasYesterday(currentTime: Instant, lastUpdated: Instant): Boolean {
     if (lastUpdated.toLocalDateTime(TimeZone.of("EST")).date == currentTime.toLocalDateTime(TimeZone.of("EST")).date.minus(
             1,
-            DateTimeUnit.DAY)
+            DateTimeUnit.DAY
+        )
     ) {
         return true
     }

@@ -40,7 +40,10 @@ class IEXApiService {
         .retrieve()
         .awaitBody()
 
-    suspend fun getStockInsiderTradingFromLastUpdated(symbol: String, lastUpdate: Instant?): Flow<List<Map<String, Any>>> =
+    suspend fun getStockInsiderTradingFromLastUpdated(
+        symbol: String,
+        lastUpdate: Instant?,
+    ): Flow<List<Map<String, Any>>> =
         WebClient
             .create(iexBaseTimeSeries)
             .get()
