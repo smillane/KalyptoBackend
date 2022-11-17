@@ -113,13 +113,6 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     }
 
     suspend fun getStockNews(stockId: String): List<Map<String, Any>> = coroutineScope {
-        if (!dbCheck(stockId, true)) {
-            if (basicApiCheck(stockId)) {
-                return@coroutineScope async(start = CoroutineStart.LAZY) {
-                    iexApiService.getStockNews(stockId).first()
-                }.await()
-            }
-        }
         return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getStockNews(stockId).first() }.await()
     }
 
