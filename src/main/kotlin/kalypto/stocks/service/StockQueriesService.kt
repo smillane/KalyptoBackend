@@ -123,8 +123,8 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getStockNews(stockId).first() }.await()
     }
 
-    suspend fun getDocsFromDB(stockId: String): ReturnStockData = runBlocking {
-        return@runBlocking ReturnStockData(
+    suspend fun getDocsFromDB(stockId: String): ReturnStockData = coroutineScope {
+        return@coroutineScope ReturnStockData(
             quote = stockQuoteCollection.findOne(StockQuote::symbol eq stockId)!!.docs,
             basicStats = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)!!.docs,
             previousDividends = stockPreviousDividendCollection.findOne(StockPreviousDividend::symbol eq stockId)!!.docs,
