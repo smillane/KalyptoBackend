@@ -1,5 +1,8 @@
 package kalypto.users.resource
 
+import com.mongodb.client.result.DeleteResult
+import com.mongodb.client.result.InsertOneResult
+import com.mongodb.client.result.UpdateResult
 import kalypto.users.model.UserLists
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -26,8 +29,8 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
-    ) {
-        userInformation.addWatchlist(userID, watchlistName, position)
+    ): InsertOneResult {
+        return userInformation.addWatchlist(userID, watchlistName, position)
     }
 
     @PostMapping("/{userID}/watchlist/{watchlistName}/position/{position}/stock/{stock}")
@@ -36,8 +39,8 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
         @PathVariable("stock") stock: String,
-    ) {
-        userInformation.addStockToWatchlist(userID, watchlistName, position, stock)
+    ): UpdateResult {
+        return userInformation.addStockToWatchlist(userID, watchlistName, position, stock)
     }
 
     @PutMapping("/{userID}/watchlist/{watchlist}/position/{position}/list/{list}")
@@ -46,8 +49,8 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
         @PathVariable("list") list: List<String>,
-    ) {
-        userInformation.updateWatchlist(userID, watchlistName, position, list)
+    ): UpdateResult {
+        return userInformation.updateWatchlist(userID, watchlistName, position, list)
     }
 
     @PutMapping("/{userID}/watchlist/{currentWatchlistName}/position/{position}/{newWatchlistName}")
@@ -56,8 +59,8 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("currentWatchlistName") currentWatchlistName: String,
         @PathVariable("position") position: Int,
         @PathVariable("newWatchlistName") newWatchlistName: String,
-    ) {
-        userInformation.updateWatchlistName(userID, currentWatchlistName, position, newWatchlistName)
+    ): UpdateResult {
+        return userInformation.updateWatchlistName(userID, currentWatchlistName, position, newWatchlistName)
     }
 
     @DeleteMapping("/{userID}/watchlist/{watchlistName}/position/{position}/stock/{stock}")
@@ -66,8 +69,8 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
         @PathVariable("stock") stock: String,
-    ) {
-        userInformation.deleteStockFromWatchlist(userID, watchlistName, position, stock)
+    ): DeleteResult {
+        return userInformation.deleteStockFromWatchlist(userID, watchlistName, position, stock)
     }
 
     @DeleteMapping("/{userID}/watchlist/{watchlistName}/position/{position}")
@@ -75,7 +78,7 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
-    ) {
-        userInformation.deleteWatchlist(userID, watchlistName, position)
+    ): DeleteResult {
+        return userInformation.deleteWatchlist(userID, watchlistName, position)
     }
 }
