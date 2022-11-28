@@ -19,71 +19,38 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 class StockQueriesService(val iexApiService: IEXApiService) {
     private val timePeriod: Long = 1L
     private val upsertTrue = UpdateOptions().upsert(true)
-    private val preMarketLosers: String = "preMarketLosers"
-    private val preMarketGainers: String = "preMarketGainers"
-    private val postMarketLosers: String = "postMarketLosers"
-    private val postMarketGainers: String = "postMarketGainers"
-    private val mostActive: String = "mostActive"
-    private val gainers: String = "gainers"
-    private val losers: String = "losers"
-    private val volume: String = "volume"
-    private val stockSymbol: String = "symbol"
     private val exDate: String = "exDate"
 
     suspend fun getPreMarketLosers(): List<Map<String, Any>> = coroutineScope {
-        val preMarketLosersData = async(start = CoroutineStart.LAZY) { iexApiService.getPreMarketLosers() }.await()
-        preMarketLosersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(preMarketLosers, preMarketLosersData)
-        return@coroutineScope preMarketLosersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getPreMarketLosers() }.await()
     }
 
     suspend fun getPreMarketGainers(): List<Map<String, Any>> = coroutineScope {
-        val preMarketGainersData = async(start = CoroutineStart.LAZY) { iexApiService.getPreMarketGainers() }.await()
-        preMarketGainersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(preMarketGainers, preMarketGainersData)
-        return@coroutineScope preMarketGainersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getPreMarketGainers() }.await()
     }
 
     suspend fun getPostMarketLosers(): List<Map<String, Any>> = coroutineScope {
-        val postMarketLosersData = async(start = CoroutineStart.LAZY) { iexApiService.getPostMarketLosers() }.await()
-        postMarketLosersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(postMarketLosers, postMarketLosersData)
-        return@coroutineScope postMarketLosersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getPostMarketLosers() }.await()
     }
 
     suspend fun getPostMarketGainers(): List<Map<String, Any>> = coroutineScope {
-        val postMarketGainersData = async(start = CoroutineStart.LAZY) { iexApiService.getPostMarketGainers() }.await()
-        postMarketGainersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(postMarketGainers, postMarketGainersData)
-        return@coroutineScope postMarketGainersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getPostMarketGainers() }.await()
     }
 
     suspend fun getMostActive(): List<Map<String, Any>> = coroutineScope {
-        val mostActiveData = async(start = CoroutineStart.LAZY) { iexApiService.getMostActive() }.await()
-        mostActiveData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(mostActive, mostActiveData)
-        return@coroutineScope mostActiveData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getMostActive() }.await()
     }
 
     suspend fun getGainers(): List<Map<String, Any>> = coroutineScope {
-        val gainersData = async(start = CoroutineStart.LAZY) { iexApiService.getGainers() }.await()
-        gainersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(gainers, gainersData)
-        return@coroutineScope gainersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getGainers() }.await()
     }
 
     suspend fun getLosers(): List<Map<String, Any>> = coroutineScope {
-        val losersData = async(start = CoroutineStart.LAZY) { iexApiService.getLosers() }.await()
-        losersData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(losers, losersData)
-        return@coroutineScope losersData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getLosers() }.await()
     }
 
     suspend fun getVolume(): List<Map<String, Any>> = coroutineScope {
-        val volumeData = async(start = CoroutineStart.LAZY) { iexApiService.getVolume() }.await()
-        volumeData.forEach { updateQuote(stockSymbol, it) }
-        updateDailyList(volume, volumeData)
-        return@coroutineScope volumeData
+        return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getVolume() }.await()
     }
 
     suspend fun getAllStockData(stockId: String): Any? {
@@ -155,11 +122,11 @@ class StockQueriesService(val iexApiService: IEXApiService) {
     // check in DB if there is a quote for stock, if there isn't, there's nothing else in db
     private suspend fun dbCheck(stockId: String, basicQuote: Boolean): Boolean {
         while (basicQuote) {
-            val temp = stockQuoteCollection.findOne(StockQuote::symbol eq stockId)
-            return temp != null
+            val quote = stockQuoteCollection.findOne(StockQuote::symbol eq stockId)
+            return quote != null
         }
-        val temp = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)
-        return temp != null
+        val statsBasic = stockStatsBasicCollection.findOne(StockStatsBasic::symbol eq stockId)
+        return statsBasic != null
     }
 
     // call api for stock quote, the cheapest api call, if stock doesn't exist, won't cost api call

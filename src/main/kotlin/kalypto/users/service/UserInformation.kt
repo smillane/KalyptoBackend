@@ -8,7 +8,6 @@ import kalypto.external.clientConnections.userListsCollection
 import kalypto.users.model.*
 import kalypto.stocks.service.StockQueriesService
 import kotlinx.coroutines.coroutineScope
-import org.litote.kmongo.util.idValue
 
 @Component
 class UserInformation(val stockQueriesService: StockQueriesService) {
@@ -16,6 +15,10 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
 
     suspend fun getUsersLists(userUID: String): List<UserLists> = coroutineScope {
         return@coroutineScope userListsCollection.find(UserLists::userID eq userUID).toList().sortedBy { it.position }
+    }
+
+    suspend fun getWatchlist(userUID: String, watchlistName: String, position: Int) = coroutineScope {
+        return@coroutineScope userListsCollection.findOne(UserLists::userID eq userUID, UserLists::watchlistName eq watchlistName, UserLists::position eq position)
     }
 
     suspend fun addWatchlist(userUID: String, watchlistName: String, position: Int) = coroutineScope {
@@ -54,7 +57,7 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
 
     suspend fun updateWatchlistName(
         userUID: String,
-        oldWatchlistName: String,
+        currentWatchlistName: String,
         position: Int,
         newWatchlistName: String,
     ) = coroutineScope {
@@ -62,8 +65,9 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
             and(
                 UserLists::userID eq userUID,
                 UserLists::position eq position,
-                UserLists::watchlistName eq oldWatchlistName
-            ), set(UserLists::watchlistName setTo newWatchlistName), upsertTrue
+                UserLists::watchlistName eq currentWatchlistName
+            ),
+            setValue(UserLists::watchlistName, newWatchlistName)
         )
     }
 
@@ -75,7 +79,8 @@ class UserInformation(val stockQueriesService: StockQueriesService) {
                     UserLists::watchlistName eq watchlistName,
                     UserLists::position eq position
                 ),
-                setValue(UserLists::watchlist, list), upsertTrue
+                setValue(UserLists::watchlist, list),
+                upsertTrue
             )
         }
 

@@ -38,7 +38,7 @@ class IEXApiService {
         .get()
         .uri("insider_transactions/$symbol?last=30&token=$iexToken")
         .retrieve()
-        .awaitBody()
+        .bodyToFlow()
 
     suspend fun getStockInsiderTradingFromLastUpdated(
         symbol: String,
@@ -49,7 +49,7 @@ class IEXApiService {
             .get()
             .uri("insider_transactions/$symbol/?from=$lastUpdate&token=$iexToken")
             .retrieve()
-            .awaitBody()
+            .bodyToFlow()
 
     suspend fun getStockPeerGroup(symbol: String): List<Map<String, Any>> = WebClient
         .create(iexBase)
@@ -70,7 +70,7 @@ class IEXApiService {
         .get()
         .uri("data/CORE/DIVIDENDS/$symbol?range=2y?token=$iexToken")
         .retrieve()
-        .awaitBody()
+        .bodyToFlow()
 
     suspend fun getStockPreviousDividend(symbol: String): List<Map<String, Any>> = WebClient
         .create(iexBaseTimeSeries)
