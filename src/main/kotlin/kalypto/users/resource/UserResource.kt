@@ -24,7 +24,7 @@ class UserResource(val userInformation: UserInformation) {
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
         @PathVariable("position") position: Int,
-    ): CoroutineFindPublisher<UserLists> {
+    ): UserLists? {
         return userInformation.getWatchlist(userID, watchlistName, position)
     }
 
