@@ -53,6 +53,12 @@ class StockQueriesService(val iexApiService: IEXApiService) {
         return@coroutineScope async(start = CoroutineStart.LAZY) { iexApiService.getVolume() }.await()
     }
 
+    suspend fun validateStockExists(stockId: String): Boolean = coroutineScope {
+        val stockQuote = async(start = CoroutineStart.LAZY) { iexApiService.getStockQuote(stockId) }.await()
+        if (stockQuote.isEmpty()) return@coroutineScope false
+        return@coroutineScope true
+    }
+
     suspend fun getAllStockData(stockId: String): Any? {
         if (!dbCheck(stockId, false)) {
             return apiCheck(stockId, false)

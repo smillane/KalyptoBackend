@@ -10,12 +10,16 @@ import kalypto.stocks.service.StockQueriesService
 @RestController
 @RequestMapping("/stocks/")
 class StockQueriesResource(val stockQueriesService: StockQueriesService) {
-
     @GetMapping("{stockID}")
     suspend fun getStockInformation(
         @PathVariable("stockID") stockID: String,
     ): Any? {
         return stockQueriesService.getAllStockData(stockID)
+    }
+
+    @GetMapping("{stockID}/validate")
+    suspend fun validateStockExists(@PathVariable("stockID") stockID: String,): Boolean {
+        return stockQueriesService.validateStockExists(stockID)
     }
 
     @GetMapping("{stockID}/quote")
