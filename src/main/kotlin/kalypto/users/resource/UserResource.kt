@@ -5,7 +5,6 @@ import com.mongodb.client.result.InsertOneResult
 import com.mongodb.client.result.UpdateResult
 import kalypto.users.model.UserLists
 import kalypto.users.service.UserInformation
-import org.litote.kmongo.coroutine.CoroutineFindPublisher
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -76,7 +75,7 @@ class UserResource(val userInformation: UserInformation) {
         return userInformation.deleteStockFromWatchlist(userID, watchlistName, position, stock)
     }
 
-    @PutMapping("/{userID}/watchlist/{watchlist}/position/{position}")
+    @PutMapping("/{userID}/watchlist/{watchlistName}/position/{position}")
     suspend fun updateWatchlist(
         @PathVariable("userID") userID: String,
         @PathVariable("watchlistName") watchlistName: String,
