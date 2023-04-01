@@ -75,6 +75,7 @@ class UserResource(val userInformation: UserInformation) {
         return userInformation.deleteStockFromWatchlist(userID, watchlistName, position, stock)
     }
 
+    // change this to patch, as I'm completely replacing one part of this, but not replacing everything?
     @PutMapping("/{userID}/watchlist/{watchlistName}/position/{position}")
     suspend fun updateWatchlist(
         @PathVariable("userID") userID: String,
